@@ -1,0 +1,81 @@
+.error {
+    font-size: 12px;
+    color: $main-color;
+    margin-top: 4px;
+}
+
+// Short text input
+.text-input {
+    margin-bottom: 24px;
+
+    label {
+        display: block;
+        font-size: 16px;
+        font-weight: $font-medium;
+        margin-bottom: 8px;
+    }
+
+    input {
+        background-color: $white-color;
+        border: 1px solid $main-color;
+        box-shadow: $main-shadow;
+        height: 40px;
+        padding: 0 16px;
+        border-radius: 20px;
+        width: calc(100% - 32px);
+    }
+}
+
+// Checkbox input
+.checkbox-group {
+    >label {
+        font-weight: $font-medium;
+    }
+
+    >span {
+        display: block;
+        margin-left: 8px;
+        font-size: 12px;
+        margin-top: 4px;
+        color: $alpha-black-color;
+    }
+
+    &__input {
+        margin-top: 8px;
+
+        input {
+            display: none;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+
+            span {
+                position: relative;
+                width: 24px;
+                height: 24px;
+                background-color: #C4C4C4;
+                border-radius: 50%;
+                margin-right: 16px;
+
+                &::before {
+                    position: absolute;
+                    content: "";
+                    width: 0;
+                    height: 0;
+                    background-color: $main-color;
+                    top: 4px;
+                    left: 4px;
+                    border-radius: 50%;
+                    transition: all 0.3s ease-in-out;
+                }
+            }
+        }
+
+        input:checked + label span::before {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}

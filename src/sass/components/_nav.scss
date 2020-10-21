@@ -1,0 +1,18 @@
+.Navbar {
+  padding: 40px 7.5%;
+  text-align: center;
+
+  h1 {
+    font-size: 48px;
+  }
+
+  p {
+    font-size: 24px;
+    margin-top: 24px;
+    font-weight: $font-medium;
+  }
+
+  &__logo {
+    color: $main-color;
+  }
+}
