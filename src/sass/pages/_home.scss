@@ -17,6 +17,16 @@
         width: 100%;
         margin-bottom: 24px;
 
+        .checkbox-group {
+            >label {
+                margin: 0;
+            }
+
+            &__input {
+                margin-top: 8px;
+            }
+        }
+
         button {
             display: block;
             margin-top: 24px;

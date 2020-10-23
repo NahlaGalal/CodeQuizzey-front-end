@@ -1,81 +1,153 @@
 .error {
-    font-size: 12px;
-    color: $main-color;
-    margin-top: 4px;
+  font-size: 12px;
+  color: $main-color;
+  margin-top: 4px;
 }
 
 // Short text input
 .text-input {
-    margin-bottom: 24px;
+  margin-bottom: 24px;
 
-    label {
-        display: block;
-        font-size: 16px;
-        font-weight: $font-medium;
-        margin-bottom: 8px;
-    }
+  label {
+    display: block;
+    font-size: 20px;
+    font-weight: $font-medium;
+    margin-bottom: 8px;
+  }
 
-    input {
-        background-color: $white-color;
-        border: 1px solid $main-color;
-        box-shadow: $main-shadow;
-        height: 40px;
-        padding: 0 16px;
-        border-radius: 20px;
-        width: calc(100% - 32px);
-    }
+  input {
+    background-color: $white-color;
+    border: 1px solid $main-color;
+    box-shadow: $main-shadow;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 20px;
+    width: calc(100% - 32px);
+  }
+}
+
+// Long text input
+.long-text-group {
+  label {
+    font-size: 20px;
+  }
+
+  textarea {
+    height: 146px;
+    background-color: $white-color;
+    border-radius: 20px;
+    border: 1px solid $main-color;
+    width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+    margin-top: 24px;
+    resize: vertical;
+    font-size: 1rem;
+  }
 }
 
 // Checkbox input
 .checkbox-group {
-    >label {
-        font-weight: $font-medium;
+  > label {
+    display: block;
+    font-weight: $font-medium;
+    font-size: 20px;
+    margin-bottom: 24px;
+  }
+
+  > span {
+    display: block;
+    margin-left: 8px;
+    font-size: 12px;
+    margin-top: 4px;
+    color: $alpha-black-color;
+  }
+
+  &__input {
+    margin-top: 16px;
+
+    input {
+      display: none;
     }
 
-    >span {
-        display: block;
-        margin-left: 8px;
-        font-size: 12px;
-        margin-top: 4px;
-        color: $alpha-black-color;
+    label {
+      display: flex;
+      align-items: center;
+
+      span {
+        position: relative;
+        width: 24px;
+        height: 24px;
+        background-color: #c4c4c4;
+        border-radius: 5px;
+        margin-right: 16px;
+
+        &::before {
+          position: absolute;
+          content: "";
+          width: 0;
+          height: 0;
+          background-color: $main-color;
+          top: 4px;
+          left: 4px;
+          border-radius: 5px;
+          transition: all 0.3s ease-in-out;
+        }
+      }
     }
 
-    &__input {
-        margin-top: 8px;
-
-        input {
-            display: none;
-        }
-
-        label {
-            display: flex;
-            align-items: center;
-
-            span {
-                position: relative;
-                width: 24px;
-                height: 24px;
-                background-color: #C4C4C4;
-                border-radius: 50%;
-                margin-right: 16px;
-
-                &::before {
-                    position: absolute;
-                    content: "";
-                    width: 0;
-                    height: 0;
-                    background-color: $main-color;
-                    top: 4px;
-                    left: 4px;
-                    border-radius: 50%;
-                    transition: all 0.3s ease-in-out;
-                }
-            }
-        }
-
-        input:checked + label span::before {
-            width: 16px;
-            height: 16px;
-        }
+    input:checked + label span::before {
+      width: 16px;
+      height: 16px;
     }
+  }
+}
+
+// Radio button input
+.radio-group {
+  @extend .checkbox-group;
+
+  &__input {
+    @extend .checkbox-group__input;
+
+    label span {
+      border-radius: 50%;
+
+      &::before {
+        border-radius: 50%;
+      }
+    }
+  }
+}
+
+// File input
+.file-group {
+  > label {
+    font-size: 20px;
+  }
+
+  &__input {
+    margin-top: 24px;
+
+    input {
+      display: none;
+    }
+
+    label {
+      width: 120px;
+      height: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid $main-color;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  }
+
+  span {
+    margin-top: 8px;
+    font-size: 12px;
+    color: $alpha-black-color;
+  }
 }
