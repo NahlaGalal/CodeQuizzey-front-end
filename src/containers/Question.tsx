@@ -102,9 +102,9 @@ const Question: React.FC<any> = ({ location, history }) => {
     });
   };
 
-  const submitQuestion = (userAnswer: string | File) => {
+  const submitQuestion = (userAnswer: string | File | null) => {
     const data = new FormData();
-    data.append("answer", userAnswer);
+    data.append("answer", userAnswer as string);
     data.append("questionId", qu._id);
     data.append("email", cookies.email);
 

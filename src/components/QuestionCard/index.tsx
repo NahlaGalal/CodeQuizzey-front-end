@@ -24,7 +24,7 @@ interface IQuestionsSchema {
   lastQuestion: boolean;
   nextQuestion: () => void;
   prevQuestion: () => void;
-  submitQuestion: (userAnswer: string | File) => void;
+  submitQuestion: (userAnswer: string | File | null) => void;
 }
 
 const QuestionCard: React.FC<IQuestionsSchema> = ({
@@ -37,7 +37,9 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
   prevQuestion,
   submitQuestion,
 }) => {
-  const [userAnswer, setUserAnswer] = useState<string | File>("");
+  const [userAnswer, setUserAnswer] = useState<string | File | null>("");
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  let stylesQuestion = question.replace(urlRegex, (url) => `<a href=${url} target="_blank">${url}</a>`)
 
   return (
     <div className="Question__card">
@@ -76,7 +78,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
           />
         ) : (
           <File
-            question={question}
+            question={stylesQuestion}
             index={index}
             setUserAnswer={setUserAnswer}
           />

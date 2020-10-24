@@ -13,6 +13,9 @@
     font-size: 20px;
     font-weight: $font-medium;
     margin-bottom: 8px;
+    a {
+      color: blue;
+    }
   }
 
   input {
@@ -30,6 +33,9 @@
 .long-text-group {
   label {
     font-size: 20px;
+    a {
+      color: blue;
+    }
   }
 
   textarea {
@@ -53,6 +59,9 @@
     font-weight: $font-medium;
     font-size: 20px;
     margin-bottom: 24px;
+    a {
+      color: blue;
+    }
   }
 
   > span {
@@ -124,6 +133,9 @@
 .file-group {
   > label {
     font-size: 20px;
+    a {
+      color: blue;
+    }
   }
 
   &__input {

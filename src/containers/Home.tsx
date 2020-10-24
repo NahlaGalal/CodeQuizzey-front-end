@@ -147,5 +147,3 @@ const Home: React.FC<any> = ({ history }) => {
 };
 
 export default Home;
-
-// FIXME: Don't show non-technical circle in circles
