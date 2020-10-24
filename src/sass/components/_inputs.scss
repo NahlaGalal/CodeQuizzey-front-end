@@ -128,6 +128,8 @@
 
   &__input {
     margin-top: 24px;
+    display: flex;
+    align-items: center;
 
     input {
       display: none;
@@ -142,6 +144,10 @@
       border: 1px solid $main-color;
       border-radius: 20px;
       cursor: pointer;
+    }
+
+    p {
+      margin-left: 8px;
     }
   }
 

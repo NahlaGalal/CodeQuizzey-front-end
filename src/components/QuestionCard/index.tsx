@@ -24,7 +24,7 @@ interface IQuestionsSchema {
   lastQuestion: boolean;
   nextQuestion: () => void;
   prevQuestion: () => void;
-  submitQuestion: (userAnswer: string) => void;
+  submitQuestion: (userAnswer: string | File) => void;
 }
 
 const QuestionCard: React.FC<IQuestionsSchema> = ({
@@ -37,7 +37,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
   prevQuestion,
   submitQuestion,
 }) => {
-  const [userAnswer, setUserAnswer] = useState<string>("");
+  const [userAnswer, setUserAnswer] = useState<string | File>("");
 
   return (
     <div className="Question__card">
@@ -91,6 +91,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
         <button
           className={`btn ${index === 1 ? "btn__disallow" : "btn__solid"}`}
           onClick={prevQuestion}
+          disabled={index === 1}
         >
           <img src={iconLeft} alt="Icon left" />
           Back
@@ -105,6 +106,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
         <button
           className={`btn ${lastQuestion ? "btn__disallow" : "btn__solid"}`}
           onClick={nextQuestion}
+          disabled={lastQuestion}
         >
           Next
           <img src={iconRight} alt="Icon right" />

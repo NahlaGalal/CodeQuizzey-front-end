@@ -11,7 +11,9 @@ interface ICircle {
 
 const Home: React.FC<any> = ({ history }) => {
   const [circles, setCircles] = useState<ICircle[]>([]);
-  const [circlesChecked, setCirclesChecked] = useState<string[]>([]);
+  const [circlesChecked, setCirclesChecked] = useState<
+    { name: string; id: string }[]
+  >([]);
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
@@ -19,7 +21,7 @@ const Home: React.FC<any> = ({ history }) => {
   const [cookies, setCookies] = useCookies(["name", "email", "circles"]);
 
   useEffect(() => {
-    if(cookies.name) history.push("/question");
+    if (cookies.name) history.push("/question");
 
     (async () => {
       let res = await axios.get("http://localhost:4000/");
@@ -29,7 +31,10 @@ const Home: React.FC<any> = ({ history }) => {
   }, [cookies.name, history]);
 
   const checkCircle = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
-    let circle: string = e.currentTarget.id;
+    let circle: { name: string; id: string } = {
+      id: e.currentTarget.id,
+      name: e.currentTarget.dataset.name as string,
+    };
     setServerErrors({});
     if (e.currentTarget.checked) {
       if (circlesChecked.length === 2) e.preventDefault();
@@ -50,15 +55,15 @@ const Home: React.FC<any> = ({ history }) => {
         const inputs = {
           name,
           email,
-          circles: [...circlesChecked],
+          circles: [...circlesChecked.map((circle) => circle.id)],
         };
         let res = await axios.post("http://localhost:4000/", inputs);
         let { data } = res;
         if (data.isFailed) setServerErrors(data.error);
         else {
+          setCookies("circles", circlesChecked);
           setCookies("name", name);
           setCookies("email", email);
-          setCookies("circles", circlesChecked);
           history.push("/question");
         }
       })();
@@ -108,20 +113,24 @@ const Home: React.FC<any> = ({ history }) => {
           <div className="checkbox-group">
             <label>Technical circles</label>
             <span>You can choose one or two circles only</span>
-            {circles.map((circle: ICircle) => (
-              <div className="checkbox-group__input" key={circle._id}>
-                <input
-                  type="checkbox"
-                  name="circle"
-                  id={circle._id}
-                  onClick={(e) => checkCircle(e)}
-                />
-                <label htmlFor={circle._id}>
-                  <span></span>
-                  {circle.name}
-                </label>
-              </div>
-            ))}
+            {circles.map(
+              (circle: ICircle) =>
+                circle.name !== "Non-technical" && (
+                  <div className="checkbox-group__input" key={circle._id}>
+                    <input
+                      type="checkbox"
+                      name="circle"
+                      id={circle._id}
+                      data-name={circle.name}
+                      onClick={(e) => checkCircle(e)}
+                    />
+                    <label htmlFor={circle._id}>
+                      <span></span>
+                      {circle.name}
+                    </label>
+                  </div>
+                )
+            )}
             {error && (!circlesChecked.length || serverErrors.circle) && (
               <p className="error">
                 *{serverErrors.circle || "You must choose one or two circles"}
@@ -138,6 +147,5 @@ const Home: React.FC<any> = ({ history }) => {
 };
 
 export default Home;
-
 
 // FIXME: Don't show non-technical circle in circles
