@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useCookies } from "react-cookie";
 import axios from "../axiosInstance";
 import Navbar from "../components/Navbar";
@@ -37,6 +37,8 @@ const Question: React.FC<any> = ({ location, history }) => {
   const [end, setEnd] = useState<boolean>(false);
   // To reload page when submit last question
   const [reload, setReload] = useState<boolean>(false);
+  // Unmount component
+  const unmounted = useRef(false);
 
   const getLinkAPI = () => {
     let circleId: string = new URLSearchParams(location.search).get(
@@ -58,34 +60,40 @@ const Question: React.FC<any> = ({ location, history }) => {
   useEffect(() => {
     if (!cookies.name) history.push("/");
 
-    setEnd(false);
-    (async () => {
-      const [linkApi, circleId] = getLinkAPI();
-      let res = await axios.get(linkApi);
-      setActiveCircle(circleId || "5f90db8465a68c35f49cb3bf");
-      if (!res.data.isFailed) {
-        setQu(res.data.data.question);
-        if (res.data.data.lastQuestion) setLastQuestion(true);
-        else setLastQuestion(false);
-      } else {
-        const err = res.data.errors.data;
-        if (err.startsWith("Question") && err.endsWith("solved")) {
-          setQu({
-            question: "",
-            _id: "",
-            answerType: "Short text",
-            circleId,
-            answers: [],
-            index: +err.split(" ")[1],
-          });
-          setLastQuestion(res.data.errors.lastQuestion);
-        } else if (err === "Wrong Circle id") {
-          history.push("/error");
-        } else if (err === "All questions solved") {
-          setEnd(true);
+    if (!unmounted.current) {
+      setEnd(false);
+      (async () => {
+        const [linkApi, circleId] = getLinkAPI();
+        let res = await axios.get(linkApi);
+        setActiveCircle(circleId || "5f90db8465a68c35f49cb3bf");
+        if (!res.data.isFailed) {
+          setQu(res.data.data.question);
+          if (res.data.data.lastQuestion) setLastQuestion(true);
+          else setLastQuestion(false);
+        } else {
+          const err = res.data.errors.data;
+          if (err.startsWith("Question") && err.endsWith("solved")) {
+            setQu({
+              question: "",
+              _id: "",
+              answerType: "Short text",
+              circleId,
+              answers: [],
+              index: +err.split(" ")[1],
+            });
+            setLastQuestion(res.data.errors.lastQuestion);
+          } else if (err === "Wrong Circle id") {
+            history.push("/error");
+          } else if (err === "All questions solved") {
+            setEnd(true);
+          }
         }
-      }
-    })();
+      })();
+    }
+
+    return () => {
+      unmounted.current = true;
+    };
   }, [location.search, cookies.name, history, reload]);
 
   const nextQuestion = () => {

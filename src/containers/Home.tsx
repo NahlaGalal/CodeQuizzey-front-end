@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import IllustratedImage from "../images/undraw_Choose_bwbs.svg";
@@ -19,15 +19,22 @@ const Home: React.FC<any> = ({ history }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [cookies, setCookies] = useCookies(["name", "email", "circles"]);
+  const unmounted = useRef(false);
 
   useEffect(() => {
     if (cookies.name) history.push("/question");
 
-    (async () => {
-      let res = await axios.get("http://localhost:4000/");
-      // let res = await axios.get("http://192.168.1.5:4000/");
-      setCircles(res.data);
-    })();
+    if(!unmounted.current) {
+      (async () => {
+        let res = await axios.get("http://localhost:4000/");
+        // let res = await axios.get("http://192.168.1.5:4000/");
+        setCircles(res.data);
+      })();
+    }
+
+    return () => {
+      unmounted.current = true;
+    };
   }, [cookies.name, history]);
 
   const checkCircle = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
