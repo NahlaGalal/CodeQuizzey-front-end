@@ -23,7 +23,7 @@ const Home: React.FC<any> = ({ history }) => {
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
-  const [cookies, setCookies] = useCookies(["name", "email", "circles"]);
+  const [cookies, setCookies] = useCookies(["email", "circles", "quiz"]);
   const unmounted = useRef(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ const Home: React.FC<any> = ({ history }) => {
     return () => {
       unmounted.current = true;
     };
-  }, [cookies.name, history]);
+  }, [cookies.email, history]);
 
   const checkCircle = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
     let circle: { name: string; id: string } = {
@@ -80,7 +80,7 @@ const Home: React.FC<any> = ({ history }) => {
         else {
           setCookies("circles", circlesChecked);
           setCookies("email", email);
-          setCookies("quizId", quiz.id);
+          setCookies("quiz", quiz);
           history.push("/question");
         }
       })();
