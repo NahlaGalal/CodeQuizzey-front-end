@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useCookies } from "react-cookie";
 import IllustratedImage from "../images/undraw_Choose_bwbs.svg";
+import noQuiz from "../images/no-quiz.svg";
 import Navbar from "../components/Navbar";
 
 interface ICircle {
@@ -11,6 +12,10 @@ interface ICircle {
 
 const Home: React.FC<any> = ({ history }) => {
   const [circles, setCircles] = useState<ICircle[]>([]);
+  const [quiz, setQuiz] = useState<{ name: string; id: string }>({
+    name: "",
+    id: "",
+  });
   const [circlesChecked, setCirclesChecked] = useState<
     { name: string; id: string }[]
   >([]);
@@ -22,13 +27,18 @@ const Home: React.FC<any> = ({ history }) => {
   const unmounted = useRef(false);
 
   useEffect(() => {
-    if (cookies.name) history.push("/question");
+    if (cookies.email) history.push("/question");
 
-    if(!unmounted.current) {
+    if (!unmounted.current) {
       (async () => {
         let res = await axios.get("http://localhost:4000/");
-        // let res = await axios.get("http://192.168.1.5:4000/");
-        setCircles(res.data);
+        if (res.data.isFailed) {
+          setCircles([]);
+          setQuiz({ name: "", id: "" });
+        } else {
+          setCircles(res.data.data.circles);
+          setQuiz({ name: res.data.data.quizName, id: res.data.data.quizId });
+        }
       })();
     }
 
@@ -69,8 +79,8 @@ const Home: React.FC<any> = ({ history }) => {
         if (data.isFailed) setServerErrors(data.error);
         else {
           setCookies("circles", circlesChecked);
-          setCookies("name", name);
           setCookies("email", email);
+          setCookies("quizId", quiz.id);
           history.push("/question");
         }
       })();
@@ -79,50 +89,50 @@ const Home: React.FC<any> = ({ history }) => {
 
   return (
     <React.Fragment>
-      <Navbar />
-      <main className="Home">
-        <img src={IllustratedImage} alt="Illustrated svg" />
-        <form onSubmit={(e) => submitBasicData(e)}>
-          <div className="text-input">
-            <label htmlFor="name">Your name</label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              onChange={(e) => {
-                setName(e.currentTarget.value);
-                setServerErrors({});
-              }}
-            />
-            {error && (!name || serverErrors.name) && (
-              <p className="error">
-                *{serverErrors.name || "You must type your name"}
-              </p>
-            )}
-          </div>
-          <div className="text-input">
-            <label htmlFor="email">Your email</label>
-            <input
-              type="email"
-              name="email"
-              id="email"
-              onChange={(e) => {
-                setEmail(e.currentTarget.value);
-                setServerErrors({});
-              }}
-            />
-            {error && (!email || serverErrors.email) && (
-              <p className="error">
-                *{serverErrors.email || "You must type your email"}
-              </p>
-            )}
-          </div>
-          <div className="checkbox-group">
-            <label>Technical circles</label>
-            <span>You can choose one or two circles only</span>
-            {circles.map(
-              (circle: ICircle) =>
-                circle.name !== "Non-technical" && (
+      {quiz.id ? (
+        <React.Fragment>
+          <Navbar name={quiz.name} />
+          <main className="Home">
+            <img src={IllustratedImage} alt="Illustrated svg" />
+            <form onSubmit={(e) => submitBasicData(e)}>
+              <div className="text-input">
+                <label htmlFor="name">Your name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  onChange={(e) => {
+                    setName(e.currentTarget.value);
+                    setServerErrors({});
+                  }}
+                />
+                {error && (!name || serverErrors.name) && (
+                  <p className="error">
+                    *{serverErrors.name || "You must type your name"}
+                  </p>
+                )}
+              </div>
+              <div className="text-input">
+                <label htmlFor="email">Your email</label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  onChange={(e) => {
+                    setEmail(e.currentTarget.value);
+                    setServerErrors({});
+                  }}
+                />
+                {error && (!email || serverErrors.email) && (
+                  <p className="error">
+                    *{serverErrors.email || "You must type your email"}
+                  </p>
+                )}
+              </div>
+              <div className="checkbox-group">
+                <label>Technical circles</label>
+                <span>You can choose one or two circles only</span>
+                {circles.map((circle: ICircle) => (
                   <div className="checkbox-group__input" key={circle._id}>
                     <input
                       type="checkbox"
@@ -136,19 +146,28 @@ const Home: React.FC<any> = ({ history }) => {
                       {circle.name}
                     </label>
                   </div>
-                )
-            )}
-            {error && (!circlesChecked.length || serverErrors.circle) && (
-              <p className="error">
-                *{serverErrors.circle || "You must choose one or two circles"}
-              </p>
-            )}
-          </div>
-          <button className="btn btn__outline" type="submit">
-            Next
-          </button>
-        </form>
-      </main>
+                ))}
+                {error && (!circlesChecked.length || serverErrors.circle) && (
+                  <p className="error">
+                    *
+                    {serverErrors.circle ||
+                      "You must choose one or two circles"}
+                  </p>
+                )}
+              </div>
+              <button className="btn btn__outline" type="submit">
+                Next
+              </button>
+            </form>
+          </main>
+        </React.Fragment>
+      ) : (
+        <div className="Home__no-quiz">
+          <img src={noQuiz} alt="No quizzes" />
+          <h1> Sorry, </h1>
+          <p> No quizzes available </p>
+        </div>
+      )}
     </React.Fragment>
   );
 };

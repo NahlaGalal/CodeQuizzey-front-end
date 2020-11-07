@@ -34,4 +34,26 @@
             margin-left: auto;
         }
     }
+
+    &__no-quiz {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-self: center;
+        min-height: 100vh;
+        text-align: center;
+
+        img {
+            height: 50vh;
+        }
+
+        h1 {
+            font-size: 72px;
+            color: $main-color;
+        }
+
+        p {
+            font-size: 40px;
+        }
+    }
 }
