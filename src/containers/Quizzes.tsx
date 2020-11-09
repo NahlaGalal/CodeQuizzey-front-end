@@ -184,16 +184,20 @@ const Admin: React.FC<any> = ({ history }) => {
         {/* Current Quiz */}
         <section className="Quizzes__section">
           <h2>Current Quiz</h2>
-          <div className="Quizzes__section__box current">
-            <h3>{quizzes?.currentQuiz.name}</h3>
-            <div className="info">
-              <p>Time remaining: </p>
-              {calculateDate(quizzes?.currentQuiz.endDate)}
+          {quizzes?.currentQuiz && (
+            <div className="Quizzes__section__box current">
+              <h3>{quizzes?.currentQuiz.name}</h3>
+              <div className="info">
+                <p>Time remaining: </p>
+                {calculateDate(quizzes?.currentQuiz.endDate)}
+              </div>
+              <button
+                onClick={(e) => showPrevMenu(e, quizzes?.currentQuiz._id)}
+              >
+                <img src={menuIcon} alt="Menu icon" />
+              </button>
             </div>
-            <button onClick={(e) => showPrevMenu(e, quizzes?.currentQuiz._id)}>
-              <img src={menuIcon} alt="Menu icon" />
-            </button>
-          </div>
+          )}
         </section>
 
         {/* Upcoming Quizzes */}
