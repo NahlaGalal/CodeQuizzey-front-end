@@ -6,6 +6,7 @@ import Error from '../containers/Error';
 import Home from '../containers/Home';
 import Question from '../containers/Question';
 import AddCircle from '../containers/AddCircle';
+import AddQuiz from '../containers/AddQuiz';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route exact path="/auth" component={AdminAuth} />
         <Route exact path="/admin" component={Admin} />
         <Route exact path="/add-circle" component={AddCircle} />
+        <Route exact path="/add-quiz" component={AddQuiz} />
         <Route exact path="/error" component={Error} />
         <Redirect to="/error" />
       </Switch>
