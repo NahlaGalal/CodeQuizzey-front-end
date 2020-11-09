@@ -14,7 +14,7 @@ const AddAdmin: React.FC<any> = ({ history }) => {
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
 
-  const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
+  const addAdmin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !email || !password) setError(true);
     (async () => {
@@ -38,7 +38,7 @@ const AddAdmin: React.FC<any> = ({ history }) => {
       <main className="Add-circle">
         <h2>Add Admin</h2>
         <img src={IllustratedImage} alt="Illustrated image" />
-        <form onSubmit={(e) => submitCircle(e)}>
+        <form onSubmit={(e) => addAdmin(e)}>
           <div className="text-input">
             <label htmlFor="name">Admin name</label>
             <input

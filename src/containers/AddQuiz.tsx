@@ -14,7 +14,7 @@ const AddQuiz: React.FC<any> = ({ history }) => {
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
 
-  const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
+  const addQuiz = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!quiz || !startDate || !endDate) setError(true);
     (async () => {
@@ -39,7 +39,7 @@ const AddQuiz: React.FC<any> = ({ history }) => {
       <main className="Add-circle">
         <h2>Add Quiz</h2>
         <img src={IllustratedImage} alt="Illustrated image" />
-        <form onSubmit={(e) => submitCircle(e)}>
+        <form onSubmit={(e) => addQuiz(e)}>
           <div className="text-input">
             <label htmlFor="name">Quiz name</label>
             <input
