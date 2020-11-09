@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
-import Admin from '../containers/Admin';
+import Admin from '../containers/Quizzes';
 import AdminAuth from '../containers/AdminAuth';
 import Error from '../containers/Error';
 import Home from '../containers/Home';

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import IllustratedImage from "../images/undraw_Choose_bwbs.svg";
 import axios from "../axiosInstance";
@@ -21,7 +21,6 @@ const AdminAuth: React.FC<any> = ({ history }) => {
     if (email && password) {
       (async () => {
         const inputs = {
-          name: "Nahla Galal",
           email,
           password,
         };
@@ -30,6 +29,7 @@ const AdminAuth: React.FC<any> = ({ history }) => {
         if (data.isFailed) setServerErrors(data.errors);
         else {
           setCookies("token", data.data.token);
+          history.push("/admin");
         }
       })();
     }
@@ -37,7 +37,7 @@ const AdminAuth: React.FC<any> = ({ history }) => {
 
   return (
     <React.Fragment>
-      <Navbar />
+      <Navbar name="CAT Race"/>
       <main className="Home">
         <img src={IllustratedImage} alt="Illustrated svg" />
         <form onSubmit={(e) => submitBasicData(e)}>

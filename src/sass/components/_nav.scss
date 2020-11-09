@@ -16,3 +16,30 @@
     color: $main-color;
   }
 }
+
+.Admin_nav {
+  height: 80px;
+  background-color: $main-color;
+  padding: 0 7.5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h1 {
+    font-size: 40px;
+  }
+
+  ul {
+    display: flex;
+    
+    li {
+      &:not(:last-of-type) {
+        margin-right: 16px;
+      }
+
+      a {
+        color: $white-color;
+      }
+    }
+  }
+}
