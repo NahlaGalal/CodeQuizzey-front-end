@@ -5,6 +5,7 @@ import AdminAuth from '../containers/AdminAuth';
 import Error from '../containers/Error';
 import Home from '../containers/Home';
 import Question from '../containers/Question';
+import AddCircle from '../containers/AddCircle';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route exact path="/question" component={Question} />
         <Route exact path="/auth" component={AdminAuth} />
         <Route exact path="/admin" component={Admin} />
+        <Route exact path="/add-circle" component={AddCircle} />
         <Route exact path="/error" component={Error} />
         <Redirect to="/error" />
       </Switch>
