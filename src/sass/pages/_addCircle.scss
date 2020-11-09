@@ -4,7 +4,7 @@
     background-color: $white-color;
     box-shadow: $box-shadow;
     border-radius: 20px;
-    height: calc(100vh - 160px);
+    min-height: calc(100vh - 160px);
     padding: 40px;
     box-sizing: border-box;
     display: grid;

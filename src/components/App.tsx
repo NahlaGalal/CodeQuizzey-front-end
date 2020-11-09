@@ -8,6 +8,8 @@ import Question from '../containers/Question';
 import AddCircle from '../containers/AddCircle';
 import AddQuiz from '../containers/AddQuiz';
 import AddAdmin from '../containers/AddAdmin';
+import Quiz from '../containers/Quiz';
+import AddQuestion from "../containers/AddQuestion";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
         <Route exact path="/add-circle" component={AddCircle} />
         <Route exact path="/add-quiz" component={AddQuiz} />
         <Route exact path="/add-admin" component={AddAdmin} />
+        <Route exact path="/quiz/:id" component={Quiz} />
+        <Route exact path="/add-question/:id" component={AddQuestion} /> 
         <Route exact path="/error" component={Error} />
         <Redirect to="/error" />
       </Switch>
