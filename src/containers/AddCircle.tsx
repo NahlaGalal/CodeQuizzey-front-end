@@ -33,7 +33,7 @@ const AddCircle: React.FC<any> = ({ history }) => {
       <AdminNav />
       <main className="Add-circle">
         <h2>Add Circle</h2>
-        <img src={IllustratedImage} alt="Illustrated image" />
+        <img src={IllustratedImage} alt="Illustrated svg of add circle" />
         <form onSubmit={(e) => submitCircle(e)}>
           <div className="text-input">
             <label htmlFor="name">Circle name</label>

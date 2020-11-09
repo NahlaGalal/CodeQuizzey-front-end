@@ -38,7 +38,7 @@ const AddQuiz: React.FC<any> = ({ history }) => {
       <AdminNav />
       <main className="Add-circle">
         <h2>Add Quiz</h2>
-        <img src={IllustratedImage} alt="Illustrated image" />
+        <img src={IllustratedImage} alt="Illustrated svg of add quiz" />
         <form onSubmit={(e) => addQuiz(e)}>
           <div className="text-input">
             <label htmlFor="name">Quiz name</label>

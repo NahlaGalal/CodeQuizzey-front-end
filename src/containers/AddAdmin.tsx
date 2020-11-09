@@ -37,7 +37,7 @@ const AddAdmin: React.FC<any> = ({ history }) => {
       <AdminNav />
       <main className="Add-circle">
         <h2>Add Admin</h2>
-        <img src={IllustratedImage} alt="Illustrated image" />
+        <img src={IllustratedImage} alt="Illustrated svg of add admin" />
         <form onSubmit={(e) => addAdmin(e)}>
           <div className="text-input">
             <label htmlFor="name">Admin name</label>
