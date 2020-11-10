@@ -62,7 +62,12 @@ const Question: React.FC<any> = ({ location, history }) => {
     (async () => {
       const [linkApi, circleId] = getLinkAPI();
       let res = await axios.get(linkApi);
-      setActiveCircle(circleId || "5f90db8465a68c35f49cb3bf");
+      setActiveCircle(
+        circleId ||
+          cookies.circles.find(
+            (c: { name: string; id: string }) => c.name === "Non-technical"
+          ).id
+      );
       if (!res.data.isFailed) {
         setQu(res.data.data.question);
         if (res.data.data.lastQuestion) setLastQuestion(true);
@@ -86,7 +91,7 @@ const Question: React.FC<any> = ({ location, history }) => {
         }
       }
     })();
-  }, [location.search, cookies.email, history, reload]);
+  }, [location.search, cookies.email, cookies.circles, history, reload]);
 
   const nextQuestion = () => {
     history.push({
@@ -140,20 +145,11 @@ const Question: React.FC<any> = ({ location, history }) => {
     })();
   };
 
-  return (
+  return cookies.email ? (
     <React.Fragment>
       <Navbar logoOnly={true} name={cookies.quiz.name} />
       <main className="Question">
         <header className="Question__btns">
-          <button
-            className={`${
-              activeCircle === "5f90db8465a68c35f49cb3bf" && "active"
-            }`}
-            data-id="5f90db8465a68c35f49cb3bf"
-            onClick={changeCircle}
-          >
-            Non-technical Questions
-          </button>
           {cookies.circles?.map((circle: { id: string; name: string }) => (
             <button
               data-id={circle.id}
@@ -195,6 +191,8 @@ const Question: React.FC<any> = ({ location, history }) => {
         )}
       </main>
     </React.Fragment>
+  ) : (
+    <p> </p>
   );
 };
 

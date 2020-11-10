@@ -105,4 +105,10 @@
       }
     }
   }
+
+  &__empty {
+    color: $main-color;
+    text-align: center;
+    width: 100%;
+  }
 }

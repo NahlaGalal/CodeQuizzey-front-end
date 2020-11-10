@@ -3,15 +3,22 @@ import React, { useEffect, useState } from "react";
 interface IQuestion {
   question: string;
   index: number;
+  userAnswer?: string;
   setUserAnswer: (answer: null | File) => void;
 }
 
-const File: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
+const File: React.FC<IQuestion> = ({
+  question,
+  index,
+  userAnswer,
+  setUserAnswer,
+}) => {
   const [fileName, setFileName] = useState<string>("");
 
   useEffect(() => {
-    setFileName("");
-  }, [index])
+    if (userAnswer) setFileName(userAnswer);
+    else setFileName("");
+  }, [userAnswer]);
 
   const uploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     let file = e.currentTarget.files && e.currentTarget.files[0];
@@ -21,7 +28,9 @@ const File: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
 
   return (
     <div className="file-group">
-      <label dangerouslySetInnerHTML={{__html: `${index}- ${question}`}}></label>
+      <label
+        dangerouslySetInnerHTML={{ __html: `${index}- ${question}` }}
+      ></label>
       <div className="file-group__input">
         <input
           type="file"
@@ -29,8 +38,15 @@ const File: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
           name="answer"
           id="answer"
           onChange={(e) => uploadFile(e)}
+          disabled={userAnswer ? true : false}
         />
-        <label htmlFor="answer">Upload a file</label>
+        <label htmlFor="answer">
+          {userAnswer ? (
+            <a href={`http://localhost:4000/${userAnswer}`}>Download a file</a>
+          ) : (
+            "Upload a file"
+          )}
+        </label>
         <p>{fileName}</p>
       </div>
       <span>

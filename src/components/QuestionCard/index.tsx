@@ -93,7 +93,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
             question={stylesQuestion}
             index={index}
             setUserAnswer={setUserAnswer}
-            // answer={uAnswer}
+            userAnswer={uAnswer}
           />
         )
       ) : (

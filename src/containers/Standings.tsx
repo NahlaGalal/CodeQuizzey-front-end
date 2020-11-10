@@ -35,11 +35,13 @@ interface IResponses {
   }[];
 }
 
-const Standings: React.FC<any> = ({ match }) => {
+const Standings: React.FC<any> = ({ match, history }) => {
   const [cookies] = useCookies(["token"]);
   const [responses, setResponses] = useState<IResponses[]>();
   const [circles, setCircles] = useState<string[]>([]);
-  const [questionCard, setQuestionCard] = useState<IQuestionDetails & {userAnswer: string}>({
+  const [questionCard, setQuestionCard] = useState<
+    IQuestionDetails & { userAnswer: string }
+  >({
     quizId: "",
     question: "",
     answers: [],
@@ -47,11 +49,13 @@ const Standings: React.FC<any> = ({ match }) => {
     circleId: "",
     answerType: "Short text",
     index: 1,
-    userAnswer: ""
+    userAnswer: "",
   });
   const [showQuestionCard, setShowQuestionCard] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!cookies.token) history.push("/auth");
+
     (async () => {
       let res = await axios.get(`/responses?quizId=${match.params.id}`, {
         headers: { Authorization: `Bearer ${cookies.token}` },
@@ -63,10 +67,10 @@ const Standings: React.FC<any> = ({ match }) => {
       );
       setCircles(Array.from(circles));
     })();
-  }, []);
+  }, [cookies.token, match.params.id, history]);
 
   const showQuestion = (details: IQuestionDetails, userAnswer: string) => {
-    setQuestionCard({...details, userAnswer});
+    setQuestionCard({ ...details, userAnswer });
     setShowQuestionCard(true);
   };
 
@@ -79,60 +83,42 @@ const Standings: React.FC<any> = ({ match }) => {
           <p>Current quiz</p>
         </header>
 
-        <table>
-          <thead>
-            <tr>
-              <th className="id">Id</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th className="large">Circle</th>
-              <th className="id">Question index</th>
-              <th className="large">Question & answer</th>
-            </tr>
-          </thead>
-          <tbody>
-            {responses?.map((response, n) => {
-              let user = false;
-              return circles.map((circle) => {
-                let circleB = false;
-                let qusCircle = response.solvedQuestions.filter(
-                  (qu) => qu.circle === circle
-                );
-                if (qusCircle) {
-                  return qusCircle.map((qu) => {
-                    if (!user) {
-                      user = true;
-                      circleB = true;
-                      return (
-                        <tr key={qu.questionId}>
-                          <td rowSpan={response.solvedQuestions.length}>
-                            {n + 1}
-                          </td>
-                          <td rowSpan={response.solvedQuestions.length}>
-                            {response.name}
-                          </td>
-                          <td rowSpan={response.solvedQuestions.length}>
-                            {response.email}
-                          </td>
-                          <td rowSpan={qusCircle.length}>{circle}</td>
-                          <td>{qu.questionDetails.index}</td>
-                          <td>
-                            <button
-                              className="btn btn__outline"
-                              onClick={() =>
-                                showQuestion(qu.questionDetails, qu.answer)
-                              }
-                            >
-                              View answer
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    } else {
-                      if (!circleB) {
+        <div className="Standings__table">
+          <table>
+            <thead>
+              <tr>
+                <th className="id">Id</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th className="large">Circle</th>
+                <th className="id">Question index</th>
+                <th className="large">Question & answer</th>
+              </tr>
+            </thead>
+            <tbody>
+              {responses?.map((response, n) => {
+                let user = false;
+                return circles.map((circle) => {
+                  let circleB = false;
+                  let qusCircle = response.solvedQuestions.filter(
+                    (qu) => qu.circle === circle
+                  );
+                  if (qusCircle) {
+                    return qusCircle.map((qu) => {
+                      if (!user) {
+                        user = true;
                         circleB = true;
                         return (
                           <tr key={qu.questionId}>
+                            <td rowSpan={response.solvedQuestions.length}>
+                              {n + 1}
+                            </td>
+                            <td rowSpan={response.solvedQuestions.length}>
+                              {response.name}
+                            </td>
+                            <td rowSpan={response.solvedQuestions.length}>
+                              {response.email}
+                            </td>
                             <td rowSpan={qusCircle.length}>{circle}</td>
                             <td>{qu.questionDetails.index}</td>
                             <td>
@@ -148,29 +134,49 @@ const Standings: React.FC<any> = ({ match }) => {
                           </tr>
                         );
                       } else {
-                        return (
-                          <tr key={qu.questionId}>
-                            <td>{qu.questionDetails.index}</td>
-                            <td>
-                              <button
-                                className="btn btn__outline"
-                                onClick={() =>
-                                  showQuestion(qu.questionDetails, qu.answer)
-                                }
-                              >
-                                View answer
-                              </button>
-                            </td>
-                          </tr>
-                        );
+                        if (!circleB) {
+                          circleB = true;
+                          return (
+                            <tr key={qu.questionId}>
+                              <td rowSpan={qusCircle.length}>{circle}</td>
+                              <td>{qu.questionDetails.index}</td>
+                              <td>
+                                <button
+                                  className="btn btn__outline"
+                                  onClick={() =>
+                                    showQuestion(qu.questionDetails, qu.answer)
+                                  }
+                                >
+                                  View answer
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        } else {
+                          return (
+                            <tr key={qu.questionId}>
+                              <td>{qu.questionDetails.index}</td>
+                              <td>
+                                <button
+                                  className="btn btn__outline"
+                                  onClick={() =>
+                                    showQuestion(qu.questionDetails, qu.answer)
+                                  }
+                                >
+                                  View answer
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        }
                       }
-                    }
-                  });
-                }
-              });
-            })}
-          </tbody>
-        </table>
+                    });
+                  }
+                });
+              })}
+            </tbody>
+          </table>
+        </div>
 
         {showQuestionCard && (
           <div className="Standings__question">

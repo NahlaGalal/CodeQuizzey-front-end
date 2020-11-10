@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 interface IQuestion {
   question: string;
@@ -15,6 +15,24 @@ const Checkbox: React.FC<IQuestion> = ({
   userAnswer,
   setUserAnswer,
 }) => {
+  const [answersChecked, setAnswersChecked] = useState<string[]>([]);
+
+  const checkAnswer = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    answer: string
+  ) => {
+    const answersCopy = [...answersChecked];
+
+    if (e.currentTarget.checked) answersCopy.push(answer);
+    else {
+      const answerId = answersCopy.findIndex((ans) => ans === answer);
+      answersCopy.splice(answerId, 1);
+    }
+
+    setAnswersChecked(answersCopy);
+    setUserAnswer(answersCopy.join(","));
+  };
+
   return (
     <div className="checkbox-group">
       <label>
@@ -27,8 +45,12 @@ const Checkbox: React.FC<IQuestion> = ({
             type="checkbox"
             name="circle"
             id={`${i}`}
-            onChange={() => setUserAnswer(answer)}
-            checked={userAnswer && answer === userAnswer ? true : false}
+            onChange={(e) => checkAnswer(e, answer)}
+            defaultChecked={
+              userAnswer && userAnswer.split(",").find((a) => a === answer)
+                ? true
+                : false
+            }
             disabled={userAnswer ? true : false}
           />
           <label htmlFor={`${i}`}>

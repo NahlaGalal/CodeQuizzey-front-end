@@ -40,7 +40,7 @@ const Code: React.FC<IQuestion> = ({ question, index, userAnswer, setUserAnswer 
   useEffect(() => {
     Prism.highlightAll();
     if(userAnswer) setContent(userAnswer);
-  }, [content, language]);
+  }, [content, language, userAnswer]);
 
   const scrollCode = () => {
     clearTimeout(timer);

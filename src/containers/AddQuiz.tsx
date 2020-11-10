@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import axios from "../axiosInstance";
 import AdminNav from "../components/AdminNav";
@@ -13,6 +13,10 @@ const AddQuiz: React.FC<any> = ({ history }) => {
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
+
+  useEffect(() => {
+    if (!cookies.token) history.push("/auth");
+  }, [cookies.token, history])
 
   const addQuiz = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

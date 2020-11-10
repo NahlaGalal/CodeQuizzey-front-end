@@ -78,7 +78,10 @@ const Home: React.FC<any> = ({ history }) => {
         let { data } = res;
         if (data.isFailed) setServerErrors(data.error);
         else {
-          setCookies("circles", circlesChecked);
+          setCookies("circles", [
+            ...circlesChecked,
+            { name: "Non-technical", id: res.data.data.nonTech },
+          ]);
           setCookies("email", email);
           setCookies("quiz", quiz);
           history.push("/question");

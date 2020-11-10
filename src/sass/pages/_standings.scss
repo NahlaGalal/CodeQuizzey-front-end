@@ -18,36 +18,43 @@
     }
   }
 
-  table {
-    margin-top: 24px;
+  &__table {
     width: 100%;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 1) 84px,
-      rgba(194, 52, 28, 0.5) 84px
-    );
+    overflow: auto;
+    
+    table {
+      margin-top: 24px;
+      width: 100%;
+      min-width: 947px;
+      overflow: auto;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 1) 84px,
+        rgba(194, 52, 28, 0.5) 84px
+      );
 
-    tr {
-      height: 80px;
-    }
-
-    th {
-      background-color: $disallowed-color;
-      font-weight: $font-regular;
-      &.id {
-        width: 100px;
+      tr {
+        height: 80px;
       }
 
-      &.large {
-        width: 168px;
+      th {
+        background-color: $disallowed-color;
+        font-weight: $font-regular;
+        &.id {
+          width: 100px;
+        }
+
+        &.large {
+          width: 168px;
+        }
       }
-    }
 
-    tbody {
-      background-color: $white-color;
+      tbody {
+        background-color: $white-color;
 
-      td {
-        text-align: center;
+        td {
+          text-align: center;
+        }
       }
     }
   }

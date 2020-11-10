@@ -184,9 +184,13 @@ const Admin: React.FC<any> = ({ history }) => {
         {/* Current Quiz */}
         <section className="Quizzes__section">
           <h2>Current Quiz</h2>
-          {quizzes?.currentQuiz && (
+          {quizzes?.currentQuiz ? (
             <div className="Quizzes__section__box current">
-              <h3>{quizzes?.currentQuiz.name}</h3>
+              <h3>
+                <Link to={`/quiz/${quizzes.currentQuiz._id}`}>
+                  {quizzes?.currentQuiz.name}
+                </Link>
+              </h3>
               <div className="info">
                 <p>Time remaining: </p>
                 {calculateDate(quizzes?.currentQuiz.endDate)}
@@ -197,6 +201,8 @@ const Admin: React.FC<any> = ({ history }) => {
                 <img src={menuIcon} alt="Menu icon" />
               </button>
             </div>
+          ) : (
+            <p className="Quizzes__empty"> No quizzes currently </p>
           )}
         </section>
 
@@ -204,24 +210,30 @@ const Admin: React.FC<any> = ({ history }) => {
         <section className="Quizzes__section">
           <h2>Upcoming Quizzes</h2>
           <div className="Quizzes__section__container">
-            {quizzes?.upcomingQuizzes.map((quiz) => (
-              <div className="Quizzes__section__box vertical" key={quiz._id}>
-                <div className="Quizzes__section__box__header">
-                  <h3>{quiz.name}</h3>
-                  <button onClick={(e) => showComingMenu(e, quiz._id)}>
-                    <img src={menuIcon} alt="Menu icon" />
-                  </button>
+            {quizzes?.upcomingQuizzes.length ? (
+              quizzes.upcomingQuizzes.map((quiz) => (
+                <div className="Quizzes__section__box vertical" key={quiz._id}>
+                  <div className="Quizzes__section__box__header">
+                    <h3>
+                      <Link to={`/quiz/${quiz._id}`}>{quiz.name}</Link>
+                    </h3>
+                    <button onClick={(e) => showComingMenu(e, quiz._id)}>
+                      <img src={menuIcon} alt="Menu icon" />
+                    </button>
+                  </div>
+                  <div className="info">
+                    <p>Start date:</p>
+                    <span>{quiz.startDate}</span>
+                  </div>
+                  <div className="info">
+                    <p>End date:</p>
+                    <span>{quiz.endDate}</span>
+                  </div>
                 </div>
-                <div className="info">
-                  <p>Start date:</p>
-                  <span>{quiz.startDate}</span>
-                </div>
-                <div className="info">
-                  <p>End date:</p>
-                  <span>{quiz.endDate}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="Quizzes__empty"> No upcoming quizzes </p>
+            )}
           </div>
         </section>
 
@@ -229,44 +241,50 @@ const Admin: React.FC<any> = ({ history }) => {
         <section className="Quizzes__section">
           <h2>Previous Quizzes</h2>
           <div className="Quizzes__section__container">
-            {quizzes?.previousQuizzes.map((quiz) => (
-              <div className="Quizzes__section__box vertical" key={quiz._id}>
-                <div className="Quizzes__section__box__header">
-                  <h3>{quiz.name}</h3>
-                  <button onClick={(e) => showPrevMenu(e, quiz._id)}>
-                    <img src={menuIcon} alt="Menu icon" />
-                  </button>
-                  <span className="Quizzes__section__box__header__statistics">
-                    {quiz.circles.length} circles, {quiz.responses.length}{" "}
-                    responses
-                  </span>
+            {quizzes?.previousQuizzes.length ? (
+              quizzes.previousQuizzes.map((quiz) => (
+                <div className="Quizzes__section__box vertical" key={quiz._id}>
+                  <div className="Quizzes__section__box__header">
+                    <h3>
+                      <Link to={`/quiz/${quiz._id}`}>{quiz.name}</Link>
+                    </h3>
+                    <button onClick={(e) => showPrevMenu(e, quiz._id)}>
+                      <img src={menuIcon} alt="Menu icon" />
+                    </button>
+                    <span className="Quizzes__section__box__header__statistics">
+                      {quiz.circles.length} circles, {quiz.responses.length}{" "}
+                      responses
+                    </span>
+                  </div>
+                  <div className="info">
+                    <p>Top member: </p>
+                    {quiz.topMember ? (
+                      <span>{quiz.topMember}</span>
+                    ) : (
+                      <span className="unkown"> Not known yet</span>
+                    )}
+                  </div>
+                  <div className="info">
+                    <p>Top circle: </p>
+                    {quiz.topCircle ? (
+                      <span>{quiz.topCircle}</span>
+                    ) : (
+                      <span className="unkown"> Not known yet</span>
+                    )}
+                  </div>
+                  <div className="info">
+                    <p>Start date:</p>
+                    <span>{quiz.startDate}</span>
+                  </div>
+                  <div className="info">
+                    <p>End date:</p>
+                    <span>{quiz.endDate}</span>
+                  </div>
                 </div>
-                <div className="info">
-                  <p>Top member: </p>
-                  {quiz.topMember ? (
-                    <span>{quiz.topMember}</span>
-                  ) : (
-                    <span className="unkown"> Not known yet</span>
-                  )}
-                </div>
-                <div className="info">
-                  <p>Top circle: </p>
-                  {quiz.topCircle ? (
-                    <span>{quiz.topCircle}</span>
-                  ) : (
-                    <span className="unkown"> Not known yet</span>
-                  )}
-                </div>
-                <div className="info">
-                  <p>Start date:</p>
-                  <span>{quiz.startDate}</span>
-                </div>
-                <div className="info">
-                  <p>End date:</p>
-                  <span>{quiz.endDate}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="Quizzes__empty"> No quizzes previously </p>
+            )}
           </div>
         </section>
 
@@ -297,7 +315,7 @@ const Admin: React.FC<any> = ({ history }) => {
             </button>
           </li>
           <li>
-            <Link to="/admin">
+            <Link to={`/standings/${currentQuizId}`}>
               <button>
                 <img src={standingsIcon} alt="Standings icon" />
                 Show standings

@@ -28,7 +28,7 @@ const RadioBtn: React.FC<IQuestion> = ({
             name="circle"
             id={`${i}`}
             onChange={() => setUserAnswer(answer)}
-            checked={userAnswer && answer === userAnswer ? true : false}
+            defaultChecked={userAnswer && answer === userAnswer ? true : false}
             disabled={userAnswer ? true : false}
           />
           <label htmlFor={`${i}`}>

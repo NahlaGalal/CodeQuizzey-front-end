@@ -29,13 +29,15 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
   const [cookies] = useCookies(["token"]);
 
   useEffect(() => {
+    if (!cookies.token) history.push("/auth");
+
     (async () => {
       let res = await axios.get("/add-question", {
         headers: { Authorization: `Bearer ${cookies.token}` },
       });
       if (!res.data.isFailed) setCircles(res.data.data);
     })();
-  }, [cookies.token]);
+  }, [cookies.token, history]);
 
   const getIndex = (circleId: string) => {
     (async () => {

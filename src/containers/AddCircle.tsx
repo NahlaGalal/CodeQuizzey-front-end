@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import axios from "../axiosInstance";
 import AdminNav from "../components/AdminNav";
@@ -12,20 +12,29 @@ const AddCircle: React.FC<any> = ({ history }) => {
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
 
+  useEffect(() => {
+    if (!cookies.token) history.push("/auth");
+  }, [cookies.token, history])
+
   const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
     if (!circle) setError(true);
-    (async () => {
-      let res = await axios.post(
-        "/add-circle",
-        { name: circle },
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
+    else {
+      (async () => {
+        let res = await axios.post(
+          "/add-circle",
+          { name: circle },
+          {
+            headers: { Authorization: `Bearer ${cookies.token}` },
+          }
+        );
+        if (res.data.isFailed) {
+          setError(true);
+          setServerErrors(res.data.errors);
         }
-      );
-      if (res.data.isFailed) setServerErrors(res.data.errors);
-      else setSuccess(true);
-    })();
+        else setSuccess(true);
+      })();
+    }
   };
 
   return (
