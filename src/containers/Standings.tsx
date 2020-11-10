@@ -52,6 +52,10 @@ const Standings: React.FC<any> = ({ match, history }) => {
     userAnswer: "",
   });
   const [showQuestionCard, setShowQuestionCard] = useState<boolean>(false);
+  const [quiz, setQuiz] = useState<{ name: string; state: string }>({
+    name: "",
+    state: "",
+  });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
@@ -60,12 +64,15 @@ const Standings: React.FC<any> = ({ match, history }) => {
       let res = await axios.get(`/responses?quizId=${match.params.id}`, {
         headers: { Authorization: `Bearer ${cookies.token}` },
       });
-      if (!res.data.isFailed) setResponses(res.data.data.responses);
-      const circles = new Set<string>();
-      res.data.data.responses.map((res: IResponses) =>
-        res.solvedQuestions.map((qu) => circles.add(qu.circle))
-      );
-      setCircles(Array.from(circles));
+      if (!res.data.isFailed) {
+        setResponses(res.data.data.responses);
+        const circles = new Set<string>();
+        res.data.data.responses.map((res: IResponses) =>
+          res.solvedQuestions.map((qu) => circles.add(qu.circle))
+        );
+        setCircles(Array.from(circles));
+        setQuiz(res.data.data.quiz);
+      }
     })();
   }, [cookies.token, match.params.id, history]);
 
@@ -79,8 +86,8 @@ const Standings: React.FC<any> = ({ match, history }) => {
       <AdminNav />
       <main className="Standings">
         <header>
-          <h2>CAT Race 1.0.0</h2>
-          <p>Current quiz</p>
+          <h2>{quiz.name}</h2>
+          <p>{quiz.state}</p>
         </header>
 
         <div className="Standings__table">
