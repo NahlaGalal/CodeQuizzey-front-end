@@ -10,10 +10,11 @@ import "prismjs/themes/prism-tomorrow.css";
 interface IQuestion {
   question: string;
   index: number;
+  userAnswer?: string;
   setUserAnswer: (answer: string) => void;
 }
 
-const Code: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
+const Code: React.FC<IQuestion> = ({ question, index, userAnswer, setUserAnswer }) => {
   const [content, setContent] = useState<string>("");
   const [language, setLanguage] = useState<string>("js");
   const preRef = useRef<HTMLPreElement>(null);
@@ -38,6 +39,7 @@ const Code: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
 
   useEffect(() => {
     Prism.highlightAll();
+    if(userAnswer) setContent(userAnswer);
   }, [content, language]);
 
   const scrollCode = () => {
@@ -84,6 +86,7 @@ const Code: React.FC<IQuestion> = ({ question, index, setUserAnswer }) => {
           }}
           onKeyDown={handleKeyDown}
           rows={1}
+          disabled={userAnswer ? true : false}
         />
         <pre className="code-output disable-hover" ref={preRef}>
           <code className={`language-${language}`}>{content}</code>

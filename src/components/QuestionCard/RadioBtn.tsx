@@ -5,6 +5,7 @@ interface IQuestion {
   answers: string[];
   index: number;
   setUserAnswer: (answer: string) => void;
+  userAnswer?: string
 }
 
 const RadioBtn: React.FC<IQuestion> = ({
@@ -12,6 +13,7 @@ const RadioBtn: React.FC<IQuestion> = ({
   answers,
   index,
   setUserAnswer,
+  userAnswer
 }) => {
   return (
     <div className="radio-group">
@@ -26,6 +28,8 @@ const RadioBtn: React.FC<IQuestion> = ({
             name="circle"
             id={`${i}`}
             onChange={() => setUserAnswer(answer)}
+            checked={userAnswer && answer === userAnswer ? true : false}
+            disabled={userAnswer ? true : false}
           />
           <label htmlFor={`${i}`}>
             <span></span>

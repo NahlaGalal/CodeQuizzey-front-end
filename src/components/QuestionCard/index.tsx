@@ -21,10 +21,12 @@ interface IQuestionsSchema {
   answerType: answerType;
   answers?: string[];
   index: number;
-  lastQuestion: boolean;
-  nextQuestion: () => void;
-  prevQuestion: () => void;
-  submitQuestion: (userAnswer: string | File | null) => void;
+  overlayBox?: boolean;
+  uAnswer?: string;
+  lastQuestion?: boolean;
+  nextQuestion?: () => void;
+  prevQuestion?: () => void;
+  submitQuestion?: (userAnswer: string | File | null) => void;
 }
 
 const QuestionCard: React.FC<IQuestionsSchema> = ({
@@ -32,6 +34,8 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
   index,
   answerType,
   answers,
+  overlayBox,
+  uAnswer,
   lastQuestion,
   nextQuestion,
   prevQuestion,
@@ -39,7 +43,10 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
 }) => {
   const [userAnswer, setUserAnswer] = useState<string | File | null>("");
   const urlRegex = /(https?:\/\/[^\s]+)/g;
-  let stylesQuestion = question.replace(urlRegex, (url) => `<a href=${url} target="_blank">${url}</a>`)
+  let stylesQuestion = question.replace(
+    urlRegex,
+    (url) => `<a href=${url} target="_blank">${url}</a>`
+  );
 
   return (
     <div className="Question__card">
@@ -50,6 +57,7 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
             index={index}
             answers={answers || []}
             setUserAnswer={setUserAnswer}
+            userAnswer={uAnswer}
           />
         ) : answerType === "Multiple choice" ? (
           <Checkbox
@@ -57,30 +65,35 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
             index={index}
             answers={answers || []}
             setUserAnswer={setUserAnswer}
+            userAnswer={uAnswer}
           />
         ) : answerType === "Code" ? (
           <Code
             question={question}
             index={index}
             setUserAnswer={setUserAnswer}
+            userAnswer={uAnswer}
           />
         ) : answerType === "Long text" ? (
           <LongText
             question={question}
             index={index}
             setUserAnswer={setUserAnswer}
+            userAnswer={uAnswer}
           />
         ) : answerType === "Short text" ? (
           <ShortText
             question={question}
             index={index}
             setUserAnswer={setUserAnswer}
+            userAnswer={uAnswer}
           />
         ) : (
           <File
             question={stylesQuestion}
             index={index}
             setUserAnswer={setUserAnswer}
+            // answer={uAnswer}
           />
         )
       ) : (
@@ -89,31 +102,33 @@ const QuestionCard: React.FC<IQuestionsSchema> = ({
         </p>
       )}
 
-      <div className="Question__card__controls">
-        <button
-          className={`btn ${index === 1 ? "btn__disallow" : "btn__solid"}`}
-          onClick={prevQuestion}
-          disabled={index === 1}
-        >
-          <img src={iconLeft} alt="Icon left" />
-          Back
-        </button>
-        <button
-          className={`btn ${!question ? "btn__disallow" : "btn__outline"}`}
-          onClick={() => submitQuestion(userAnswer)}
-        >
-          {" "}
-          Submit
-        </button>
-        <button
-          className={`btn ${lastQuestion ? "btn__disallow" : "btn__solid"}`}
-          onClick={nextQuestion}
-          disabled={lastQuestion}
-        >
-          Next
-          <img src={iconRight} alt="Icon right" />
-        </button>
-      </div>
+      {!overlayBox && (
+        <div className="Question__card__controls">
+          <button
+            className={`btn ${index === 1 ? "btn__disallow" : "btn__solid"}`}
+            onClick={prevQuestion}
+            disabled={index === 1}
+          >
+            <img src={iconLeft} alt="Icon left" />
+            Back
+          </button>
+          <button
+            className={`btn ${!question ? "btn__disallow" : "btn__outline"}`}
+            onClick={() => submitQuestion && submitQuestion(userAnswer)}
+          >
+            {" "}
+            Submit
+          </button>
+          <button
+            className={`btn ${lastQuestion ? "btn__disallow" : "btn__solid"}`}
+            onClick={nextQuestion}
+            disabled={lastQuestion}
+          >
+            Next
+            <img src={iconRight} alt="Icon right" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

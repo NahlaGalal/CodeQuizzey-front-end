@@ -4,6 +4,7 @@ interface IQuestion {
   question: string;
   answers: string[];
   index: number;
+  userAnswer?: string;
   setUserAnswer: (answer: string) => void;
 }
 
@@ -11,6 +12,7 @@ const Checkbox: React.FC<IQuestion> = ({
   question,
   answers,
   index,
+  userAnswer,
   setUserAnswer,
 }) => {
   return (
@@ -26,6 +28,8 @@ const Checkbox: React.FC<IQuestion> = ({
             name="circle"
             id={`${i}`}
             onChange={() => setUserAnswer(answer)}
+            checked={userAnswer && answer === userAnswer ? true : false}
+            disabled={userAnswer ? true : false}
           />
           <label htmlFor={`${i}`}>
             <span></span>
