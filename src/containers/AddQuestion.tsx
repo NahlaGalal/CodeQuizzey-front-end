@@ -28,6 +28,8 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
 
+  const path = match.path === "/edit-question/:id" ? "edit" : "add";
+
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
@@ -35,7 +37,24 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
       let res = await axios.get("/add-question", {
         headers: { Authorization: `Bearer ${cookies.token}` },
       });
-      if (!res.data.isFailed) setCircles(res.data.data);
+      if (!res.data.isFailed) {
+        setCircles(res.data.data);
+      }
+      if (path === "edit") {
+        let res2 = await axios.get(
+          `/edit-question?questionId=${match.params.id}`,
+          {
+            headers: { Authorization: `Bearer ${cookies.token}` },
+          }
+        );
+        if (!res2.data.isFailed) {
+          setCircle(res2.data.data.circle);
+          setQuestion(res2.data.data.question.question);
+          setAnswerType(res2.data.data.question.answerType);
+          setIndex(res2.data.data.question.index);
+          setAnswers(res2.data.data.question.answers);
+        }
+      }
     })();
   }, [cookies.token, history]);
 
@@ -64,33 +83,60 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
     )
       setError(true);
     else {
-      let data: {
-				quizId: string;
-        question: string;
-        circleId: string;
-        answerType: answerType;
-        index: number;
-        answers?: string[];
-      } = {
-				quizId: match.params.id,
-        question,
-        circleId: circle._id,
-        answerType,
-        index,
-      };
-      if (
-        quAnswers.length &&
-        (answerType === "Multiple choice" || answerType === "One choice")
-      )
-        data.answers = quAnswers;
 
-      (async () => {
-        let res = await axios.post("/add-question", data, {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        if (res.data.isFailed) setServerErrors(res.data.errors);
-        else setSuccess(true);
-      })();
+      if(path === "add") {
+        let data: {
+          quizId: string;
+          question: string;
+          circleId: string;
+          answerType: answerType;
+          index: number;
+          answers?: string[];
+        } = {
+          quizId: match.params.id,
+          question,
+          circleId: circle._id,
+          answerType,
+          index,
+        };
+        if (
+          quAnswers.length &&
+          (answerType === "Multiple choice" || answerType === "One choice")
+        )
+          data.answers = quAnswers;
+  
+        (async () => {
+          let res = await axios.post("/add-question", data, {
+            headers: { Authorization: `Bearer ${cookies.token}` },
+          });
+          if (res.data.isFailed) setServerErrors(res.data.errors);
+          else setSuccess(true);
+        })();
+      } else {
+        let data: {
+          questionId: string;
+          question: string;
+          answerType: answerType;
+          answers?: string[];
+        } = {
+          questionId: match.params.id,
+          question,
+          answerType,
+        };
+        if (
+          quAnswers.length &&
+          (answerType === "Multiple choice" || answerType === "One choice")
+        )
+          data.answers = quAnswers;
+
+        (async () => {
+          let res = await axios.post("/edit-question", data, {
+            headers: { Authorization: `Bearer ${cookies.token}` },
+          });
+          if (res.data.isFailed) setServerErrors(res.data.errors);
+          else setSuccess(true);
+        })();
+      }
     }
   };
 
@@ -115,14 +161,15 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                 });
                 setServerErrors({});
               }}
-              defaultValue=""
+              value={circle._id}
+              disabled={path === "edit" ? true : false}
             >
-              <option value="" disabled defaultChecked>
+              <option value="" disabled>
                 Choose circle
               </option>
-              {circles.map((circle) => (
-                <option value={circle._id} key={circle._id}>
-                  {circle.name}
+              {circles.map((c) => (
+                <option value={c._id} key={c._id}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -157,6 +204,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                 setQuestion(e.currentTarget.value);
                 setServerErrors({});
               }}
+              defaultValue={question}
             />
             {error && (!question || serverErrors.question) && (
               <p className="error">
@@ -175,7 +223,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                 setAnswerType(e.currentTarget.value as answerType);
                 setServerErrors({});
               }}
-              defaultValue="Short text"
+              defaultValue={answerType}
             >
               <option value="" disabled defaultChecked>
                 Choose answer type
@@ -211,6 +259,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                   setAnswers(answersCopy);
                   setServerErrors({});
                 }}
+                defaultValue={answers[0]}
               />
               <input
                 type="text"
@@ -222,6 +271,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                   setAnswers(answersCopy);
                   setServerErrors({});
                 }}
+                defaultValue={answers[1]}
               />
               <input
                 type="text"
@@ -233,6 +283,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                   setAnswers(answersCopy);
                   setServerErrors({});
                 }}
+                defaultValue={answers[2]}
               />
               <input
                 type="text"
@@ -244,25 +295,28 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                   setAnswers(answersCopy);
                   setServerErrors({});
                 }}
+                defaultValue={answers[3]}
               />
-              {error && (answers.filter(ans => ans !== "").length < 2 || serverErrors.answers) && (
-                <p className="error">
-                  *
-                  {serverErrors.answers ||
-                    "You must type answers or change answer type"}
-                </p>
-              )}
+              {error &&
+                (answers.filter((ans) => ans !== "").length < 2 ||
+                  serverErrors.answers) && (
+                  <p className="error">
+                    *
+                    {serverErrors.answers ||
+                      "You must type answers or change answer type"}
+                  </p>
+                )}
             </div>
           )}
 
           <button className="btn btn__outline" type="submit">
-            Add
+            {path === "add" ? "Add" : "Edit"}
           </button>
         </form>
 
         {success && (
           <Modal
-            data="You successfully add circle"
+            data={path === "add" ? "You successfully add question" : "You successfully edit question"}
             action={() => history.push("/admin")}
           />
         )}

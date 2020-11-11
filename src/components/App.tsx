@@ -25,6 +25,7 @@ function App() {
         <Route exact path="/add-admin" component={AddAdmin} />
         <Route exact path="/quiz/:id" component={Quiz} />
         <Route exact path="/add-question/:id" component={AddQuestion} /> 
+        <Route exact path="/edit-question/:id" component={AddQuestion} />
         <Route exact path="/standings/:id" component={Standings} />
         <Route exact path="/error" component={Error} />
         <Redirect to="/error" />

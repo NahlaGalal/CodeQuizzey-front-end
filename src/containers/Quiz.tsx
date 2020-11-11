@@ -101,7 +101,6 @@ const Quiz: React.FC<any> = ({ history, match }) => {
 
         <section>
           <ul>
-            {console.log(circles)}
             {circles.map((circle) => (
               <li key={circle._id}>
                 &gt; {circle.name}
@@ -115,7 +114,7 @@ const Quiz: React.FC<any> = ({ history, match }) => {
                       <li key={question._id}>
                         {question.index}- {question.question}
                         <span>
-                          <Link to="/">Edit question</Link>
+                          <Link to={`/edit-question/${question._id}`}>Edit question</Link>
                           <button onClick={() => deleteQuestion(question._id)}>Delete question</button>
                         </span>
                       </li>
