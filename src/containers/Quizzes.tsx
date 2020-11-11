@@ -291,7 +291,7 @@ const Admin: React.FC<any> = ({ history }) => {
         {/* Upcoming quiz menu */}
         <ul className="menu" ref={comingMenu}>
           <li>
-            <Link to={`/edit-quiz`}>
+            <Link to={`/edit-quiz/${currentQuizId}`}>
               <button>
                 <img src={editIcon} alt="Edit icon" />
                 Edit Quiz
