@@ -5,8 +5,8 @@ import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-circle.svg";
 
-const AddQuiz: React.FC<any> = ({ history }) => {
-  const [quiz, setquiz] = useState<string>("");
+const AddQuiz: React.FC<any> = ({ history, match }) => {
+  const [quiz, setQuiz] = useState<string>("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
@@ -14,26 +14,44 @@ const AddQuiz: React.FC<any> = ({ history }) => {
   const [success, setSuccess] = useState(false);
   const [cookies] = useCookies(["token"]);
 
+  const path = match.path === "/edit-quiz/:id" ? "edit" : "add";
+
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
-  }, [cookies.token, history])
+
+    if (path === "edit") {
+      (async () => {
+        let res = await axios.get(`/edit-quiz?quizId=${match.params.id}`, {
+          headers: { Authorization: `Bearer ${cookies.token}` },
+        });
+        if (!res.data.isFailed) {
+          setQuiz(res.data.data.name);
+          setStartDate(
+            res.data.data.startDate.split(":").splice(0, 2).join(":")
+          );
+          setEndDate(res.data.data.endDate.split(":").splice(0, 2).join(":"));
+        }
+      })();
+    }
+  }, [cookies.token, history]);
 
   const addQuiz = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!quiz || !startDate || !endDate) setError(true);
+
+    const data =
+      path === "add"
+        ? { name: quiz, startDate, endDate }
+        : { name: quiz, startDate, endDate, quizId: match.params.id };
+
     (async () => {
-      let res = await axios.post(
-        "/add-quiz",
-        { name: quiz, startDate, endDate },
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        }
-      );
+      let res = await axios.post("/add-quiz", data, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
       if (res.data.isFailed) {
-				setServerErrors(res.data.errors);
-				setError(true);
-			}
-      else setSuccess(true);
+        setServerErrors(res.data.errors);
+        setError(true);
+      } else setSuccess(true);
     })();
   };
 
@@ -51,9 +69,10 @@ const AddQuiz: React.FC<any> = ({ history }) => {
               name="name"
               id="name"
               onChange={(e) => {
-                setquiz(e.currentTarget.value);
+                setQuiz(e.currentTarget.value);
                 setServerErrors({});
               }}
+              defaultValue={quiz}
             />
             {error && (!quiz || serverErrors.quiz) && (
               <p className="error">
@@ -69,9 +88,10 @@ const AddQuiz: React.FC<any> = ({ history }) => {
               id="start"
               onChange={(e) => {
                 setStartDate(e.currentTarget.value);
-								setServerErrors({});
+                setServerErrors({});
               }}
               min={new Date().toISOString().split(":").splice(0, 2).join(":")}
+              defaultValue={startDate}
             />
             {error && (!startDate || serverErrors.startDate) && (
               <p className="error">
@@ -87,9 +107,9 @@ const AddQuiz: React.FC<any> = ({ history }) => {
               id="end"
               onChange={(e) => {
                 setEndDate(e.currentTarget.value);
-								setServerErrors({});
-							}}
-							value={endDate}
+                setServerErrors({});
+              }}
+              value={endDate}
               min={
                 startDate
                   ? startDate
@@ -103,13 +123,13 @@ const AddQuiz: React.FC<any> = ({ history }) => {
             )}
           </div>
           <button className="btn btn__outline" type="submit">
-            Add
+            {path === "add" ? "Add" : "Edit"}
           </button>
         </form>
 
         {success && (
           <Modal
-            data="You successfully add quiz"
+            data={`You successfully ${path === "add" ? "add" : "edit"} quiz`}
             action={() => history.push("/admin")}
           />
         )}
