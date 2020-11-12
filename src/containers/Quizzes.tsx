@@ -62,14 +62,14 @@ const Admin: React.FC<any> = ({ history }) => {
 
   const calculateDate = (d: string | undefined) => {
     if (!d) return;
+    console.log(d)
 
     const date = new Date(new Date(d).getTime() - new Date().getTime());
     const remaining: string[] = [];
-    // FIXME: Time!!
 
     if (date.getUTCDate()) remaining.push(`${date.getUTCDate() - 1}d`);
-    if (date.getHours()) remaining.push(`${date.getHours()}h`);
-    if (date.getMinutes()) remaining.push(`${date.getMinutes()}m`);
+    if (date.getHours()) remaining.push(`${date.getUTCHours()}h`);
+    if (date.getMinutes()) remaining.push(`${date.getUTCMinutes()}m`);
 
     return <span>{remaining.join(", ")}</span>;
   };
@@ -223,11 +223,11 @@ const Admin: React.FC<any> = ({ history }) => {
                   </div>
                   <div className="info">
                     <p>Start date:</p>
-                    <span>{quiz.startDate}</span>
+                    <span>{new Date(quiz.startDate).toLocaleString()}</span>
                   </div>
                   <div className="info">
                     <p>End date:</p>
-                    <span>{quiz.endDate}</span>
+                    <span>{new Date(quiz.endDate).toLocaleString()}</span>
                   </div>
                 </div>
               ))
@@ -274,11 +274,11 @@ const Admin: React.FC<any> = ({ history }) => {
                   </div>
                   <div className="info">
                     <p>Start date:</p>
-                    <span>{quiz.startDate}</span>
+                    <span>{new Date(quiz.startDate).toLocaleString()}</span>
                   </div>
                   <div className="info">
                     <p>End date:</p>
-                    <span>{quiz.endDate}</span>
+                    <span>{new Date(quiz.endDate).toLocaleString()}</span>
                   </div>
                 </div>
               ))
