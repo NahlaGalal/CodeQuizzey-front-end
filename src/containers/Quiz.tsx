@@ -23,7 +23,7 @@ interface IQuestionDetails {
 }
 
 const Quiz: React.FC<any> = ({ history, match }) => {
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
   const [circles, setCircles] = useState<{ name: string; _id: string }[]>([]);
   const [quiz, setQuiz] = useState<{ name: string; state: string }>({
     name: "",
@@ -44,7 +44,7 @@ const Quiz: React.FC<any> = ({ history, match }) => {
         setQuiz(res.data.data.quiz);
       }
     })();
-  }, [cookies.token, history]);
+  }, [cookies.token, history, match.params.id]);
 
   const downloadResponses = () => {
     (async () => {
@@ -74,9 +74,12 @@ const Quiz: React.FC<any> = ({ history, match }) => {
 
   const deleteQuestion = (questionId: string) => {
     (async () => {
-      const res = await axios.delete(`/delete-question?questionId=${questionId}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
+      const res = await axios.delete(
+        `/delete-question?questionId=${questionId}`,
+        {
+          headers: { Authorization: `Bearer ${cookies.token}` },
+        }
+      );
 
       if (!res.data.isFailed) {
         const res2 = await axios.get(`/quiz?quizId=${match.params.id}`, {
@@ -88,11 +91,23 @@ const Quiz: React.FC<any> = ({ history, match }) => {
         }
       }
     })();
-  }
+  };
+
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
 
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Quiz">
         <header>
           <h2>{quiz.name}</h2>
@@ -114,8 +129,12 @@ const Quiz: React.FC<any> = ({ history, match }) => {
                       <li key={question._id}>
                         {question.index}- {question.question}
                         <span>
-                          <Link to={`/edit-question/${question._id}`}>Edit question</Link>
-                          <button onClick={() => deleteQuestion(question._id)}>Delete question</button>
+                          <Link to={`/edit-question/${question._id}`}>
+                            Edit question
+                          </Link>
+                          <button onClick={() => deleteQuestion(question._id)}>
+                            Delete question
+                          </button>
                         </span>
                       </li>
                     ))}
@@ -134,7 +153,9 @@ const Quiz: React.FC<any> = ({ history, match }) => {
               <Link to={`/edit-quiz/${match.params.id}`}>
                 <button className="btn btn__solid">Edit quiz</button>
               </Link>
-              <button className="btn btn__solid" onClick={deleteQuiz}>Delete quiz</button>
+              <button className="btn btn__solid" onClick={deleteQuiz}>
+                Delete quiz
+              </button>
             </React.Fragment>
           ) : (
             <React.Fragment>

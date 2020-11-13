@@ -12,7 +12,7 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
 
   const path = match.path === "/edit-quiz/:id" ? "edit" : "add";
 
@@ -33,7 +33,7 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
         }
       })();
     }
-  }, [cookies.token, history]);
+  }, [cookies.token, history, path, match.params.id]);
 
   const addQuiz = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,9 +55,21 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
     })();
   };
 
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
+
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Add-circle">
         <h2>Add Quiz</h2>
         <img src={IllustratedImage} alt="Illustrated svg of add quiz" />

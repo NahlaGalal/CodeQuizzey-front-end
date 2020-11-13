@@ -36,7 +36,7 @@ interface IResponses {
 }
 
 const Standings: React.FC<any> = ({ match, history }) => {
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
   const [responses, setResponses] = useState<IResponses[]>();
   const [circles, setCircles] = useState<string[]>([]);
   const [questionCard, setQuestionCard] = useState<
@@ -81,9 +81,21 @@ const Standings: React.FC<any> = ({ match, history }) => {
     setShowQuestionCard(true);
   };
 
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
+
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Standings">
         <header>
           <h2>{quiz.name}</h2>

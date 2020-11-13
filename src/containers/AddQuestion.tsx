@@ -26,7 +26,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
 
   const path = match.path === "/edit-question/:id" ? "edit" : "add";
 
@@ -83,8 +83,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
     )
       setError(true);
     else {
-
-      if(path === "add") {
+      if (path === "add") {
         let data: {
           quizId: string;
           question: string;
@@ -104,7 +103,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
           (answerType === "Multiple choice" || answerType === "One choice")
         )
           data.answers = quAnswers;
-  
+
         (async () => {
           let res = await axios.post("/add-question", data, {
             headers: { Authorization: `Bearer ${cookies.token}` },
@@ -140,9 +139,21 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
     }
   };
 
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
+
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Add-circle">
         <h2>Add Question</h2>
         <img src={IllustratedImage} alt="Illustrated svg of add question" />
@@ -316,7 +327,11 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
 
         {success && (
           <Modal
-            data={path === "add" ? "You successfully add question" : "You successfully edit question"}
+            data={
+              path === "add"
+                ? "You successfully add question"
+                : "You successfully edit question"
+            }
             action={() => history.push("/admin")}
           />
         )}

@@ -10,14 +10,14 @@ const AddCircle: React.FC<any> = ({ history }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
-  }, [cookies.token, history])
+  }, [cookies.token, history]);
 
   const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+    e.preventDefault();
     if (!circle) setError(true);
     else {
       (async () => {
@@ -31,15 +31,26 @@ const AddCircle: React.FC<any> = ({ history }) => {
         if (res.data.isFailed) {
           setError(true);
           setServerErrors(res.data.errors);
-        }
-        else setSuccess(true);
+        } else setSuccess(true);
       })();
     }
   };
 
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
+
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Add-circle">
         <h2>Add Circle</h2>
         <img src={IllustratedImage} alt="Illustrated svg of add circle" />

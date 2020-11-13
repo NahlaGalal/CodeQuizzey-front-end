@@ -36,7 +36,7 @@ interface IQuizzes {
 }
 
 const Admin: React.FC<any> = ({ history }) => {
-  const [cookies] = useCookies(["token"]);
+  const [cookies, , removeCookie] = useCookies(["token"]);
   const [quizzes, setQuizzes] = useState<IQuizzes>();
   const [currentQuizId, setCurrentQuizId] = useState<string>("");
   const prevMenu = useRef<HTMLUListElement>(null);
@@ -48,7 +48,7 @@ const Admin: React.FC<any> = ({ history }) => {
 
     if (!unmounted.current) {
       (async () => {
-        let res = await axios.get("http://localhost:4000/get-quizzes", {
+        let res = await axios.get("/get-quizzes", {
           headers: { Authorization: `Bearer ${cookies.token}` },
         });
         setQuizzes(res.data.data);
@@ -62,7 +62,7 @@ const Admin: React.FC<any> = ({ history }) => {
 
   const calculateDate = (d: string | undefined) => {
     if (!d) return;
-    console.log(d)
+    console.log(d);
 
     const date = new Date(new Date(d).getTime() - new Date().getTime());
     const remaining: string[] = [];
@@ -162,14 +162,14 @@ const Admin: React.FC<any> = ({ history }) => {
   const deleteQuiz = () => {
     (async () => {
       const res = await axios.delete(
-        `http://localhost:4000/delete-quiz?quizId=${currentQuizId}`,
+        `/delete-quiz?quizId=${currentQuizId}`,
         {
           headers: { Authorization: `Bearer ${cookies.token}` },
         }
       );
 
       if (!res.data.isFailed) {
-        const res2 = await axios.get("http://localhost:4000/get-quizzes", {
+        const res2 = await axios.get("/get-quizzes", {
           headers: { Authorization: `Bearer ${cookies.token}` },
         });
         setQuizzes(res2.data.data);
@@ -177,9 +177,21 @@ const Admin: React.FC<any> = ({ history }) => {
     })();
   };
 
+  const logout = () => {
+    (async () => {
+      let res = await axios.get(`/logout?token=${cookies.token}`, {
+        headers: { Authorization: `Bearer ${cookies.token}` },
+      });
+      if (!res.data.isFailed) {
+        removeCookie("token");
+        history.push("/auth");
+      }
+    })();
+  };
+
   return (
     <React.Fragment>
-      <AdminNav />
+      <AdminNav logout={logout} />
       <main className="Quizzes" onClick={hideMenus}>
         {/* Current Quiz */}
         <section className="Quizzes__section">

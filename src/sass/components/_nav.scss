@@ -31,10 +31,18 @@
 
   ul {
     display: flex;
+    align-items: center;
     
     li {
       &:not(:last-of-type) {
         margin-right: 16px;
+      }
+      
+      button {
+        color: $white-color;
+        cursor: pointer;
+        background-color: transparent;
+        border: 0;
       }
 
       a {
