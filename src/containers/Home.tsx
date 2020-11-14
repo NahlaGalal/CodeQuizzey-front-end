@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
 import { useCookies } from "react-cookie";
+import useQuery from "../utils/useQuery";
 import IllustratedImage from "../images/undraw_Choose_bwbs.svg";
 import noQuiz from "../images/no-quiz.svg";
 import Navbar from "../components/Navbar";
@@ -23,29 +23,64 @@ const Home: React.FC<any> = ({ history }) => {
   const [email, setEmail] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    options?: string;
+    data?: any;
+  }>({
+    url: "/",
+    method: "get",
+    options: "No auth"
+  });
   const [cookies, setCookies] = useCookies(["email", "circles", "quiz"]);
   const unmounted = useRef(false);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+    options: query.options,
+  });
 
   useEffect(() => {
     if (cookies.email) history.push("/question");
 
-    if (!unmounted.current) {
-      (async () => {
-        let res = await axios.get("http://localhost:4000/");
-        if (res.data.isFailed) {
-          setCircles([]);
-          setQuiz({ name: "", id: "" });
+    switch (query.url) {
+      case "/":
+        if (query.method === "get") {
+          if (data && data.isFailed) {
+            setCircles([]);
+            setQuiz({ name: "", id: "" });
+          } else if (data && !data.isFailed) {
+            setCircles(data.data.circles);
+            setQuiz({ name: data.data.quizName, id: data.data.quizId });
+          }
+          break;
         } else {
-          setCircles(res.data.data.circles);
-          setQuiz({ name: res.data.data.quizName, id: res.data.data.quizId });
+          if (data.isFailed) setServerErrors(data.error);
+          else {
+            setCookies("circles", [
+              ...circlesChecked,
+              { name: "Non-technical", id: data.data.nonTech },
+            ]);
+            setCookies("email", email);
+            setCookies("quiz", quiz);
+            history.push("/question");
+          }
         }
-      })();
+        break;
+      default:
+        break;
+    }
+
+    if (!unmounted.current) {
+      setQuery({ url: "/", method: "get", options: "No auth" });
     }
 
     return () => {
       unmounted.current = true;
     };
-  }, [cookies.email, history]);
+  }, [cookies.email, history, data, circlesChecked, email]);
 
   const checkCircle = (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => {
     let circle: { name: string; id: string } = {
@@ -68,25 +103,16 @@ const Home: React.FC<any> = ({ history }) => {
     e.preventDefault();
     setError(true);
     if (name && email && circlesChecked.length) {
-      (async () => {
-        const inputs = {
+      setQuery({
+        url: "/",
+        method: "post",
+        data: {
           name,
           email,
           circles: [...circlesChecked.map((circle) => circle.id)],
-        };
-        let res = await axios.post("http://localhost:4000/", inputs);
-        let { data } = res;
-        if (data.isFailed) setServerErrors(data.error);
-        else {
-          setCookies("circles", [
-            ...circlesChecked,
-            { name: "Non-technical", id: res.data.data.nonTech },
-          ]);
-          setCookies("email", email);
-          setCookies("quiz", quiz);
-          history.push("/question");
-        }
-      })();
+        },
+        options: "No auth",
+      });
     }
   };
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
+import useQuery from "../utils/useQuery";
 import axios from "../axiosInstance";
 import Navbar from "../components/Navbar";
 import QuestionCard from "../components/QuestionCard";
@@ -55,43 +56,81 @@ const Question: React.FC<any> = ({ location, history }) => {
     return [linkAPI, circleId];
   };
 
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    options?: string;
+    data?: any;
+  }>({
+    url: getLinkAPI()[0],
+    method: "get",
+    options: "No auth",
+  });
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+    options: query.options,
+  });
+
   useEffect(() => {
     if (!cookies.email) history.push("/");
 
     setEnd(false);
-    (async () => {
-      const [linkApi, circleId] = getLinkAPI();
-      let res = await axios.get(linkApi);
-      setActiveCircle(
-        circleId ||
-          cookies.circles.find(
-            (c: { name: string; id: string }) => c.name === "Non-technical"
-          ).id
-      );
-      if (!res.data.isFailed) {
-        setQu(res.data.data.question);
-        if (res.data.data.lastQuestion) setLastQuestion(true);
-        else setLastQuestion(false);
-      } else {
-        const err = res.data.errors.data;
-        if (err.startsWith("Question") && err.endsWith("solved")) {
-          setQu({
-            question: "",
-            _id: "",
-            answerType: "Short text",
-            circleId,
-            answers: [],
-            index: +err.split(" ")[1],
-          });
-          setLastQuestion(res.data.errors.lastQuestion);
-        } else if (err === "Wrong Circle id" || err === "Missing data") {
-          history.push("/error");
-        } else if (err === "All questions solved") {
-          setEnd(true);
+    const [linkApi, circleId] = getLinkAPI();
+
+    switch (query.url) {
+      case linkApi:
+        setActiveCircle(
+          circleId ||
+            cookies.circles.find(
+              (c: { name: string; id: string }) => c.name === "Non-technical"
+            ).id
+        );
+        if(data) {
+          if (!data.isFailed) {
+            setQu(data.data.question);
+            if (data.data.lastQuestion) setLastQuestion(true);
+            else setLastQuestion(false);
+          } else {
+            const err = data.errors.data;
+            if (err.startsWith("Question") && err.endsWith("solved")) {
+              setQu({
+                question: "",
+                _id: "",
+                answerType: "Short text",
+                circleId,
+                answers: [],
+                index: +err.split(" ")[1],
+              });
+              setLastQuestion(data.errors.lastQuestion);
+            } else if (err === "Wrong Circle id" || err === "Missing data") {
+              history.push("/error");
+            } else if (err === "All questions solved") {
+              setEnd(true);
+            }
+          }
         }
-      }
-    })();
-  }, [location.search, cookies.email, cookies.circles, history, reload]);
+        break;
+      case "/question":
+        if (data.isFailed) history.push("/error");
+        else {
+          if (lastQuestion) setReload(!reload);
+          else
+            history.push({
+              pathname: "/question",
+              search: `?circleId=${qu.circleId}&quNo=${qu.index + 1}`,
+            });
+        }
+        break;
+      case `/end-quiz?circle=${activeCircle}&email=${cookies.email}&quizId=${cookies.quiz.id}`:
+        if (!data.isFailed) setEnd(true);
+        else history.push("/error");
+        break;
+      default:
+        break;
+    }
+  }, [location.search, cookies.email, cookies.circles, history, reload, data]);
 
   const nextQuestion = () => {
     history.push({
@@ -113,19 +152,7 @@ const Question: React.FC<any> = ({ location, history }) => {
     data.append("questionId", qu._id);
     data.append("email", cookies.email);
     data.append("quizId", cookies.quiz.id);
-
-    (async () => {
-      let res = await axios.post("/question", data);
-      if (res.data.isFailed) history.push("/error");
-      else {
-        if (lastQuestion) setReload(!reload);
-        else
-          history.push({
-            pathname: "/question",
-            search: `?circleId=${qu.circleId}&quNo=${qu.index + 1}`,
-          });
-      }
-    })();
+    setQuery({ url: "/question", method: "post", data, options: "No auth" });
   };
 
   const changeCircle = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -136,13 +163,11 @@ const Question: React.FC<any> = ({ location, history }) => {
   };
 
   const endQuiz = () => {
-    (async () => {
-      let res = await axios.get(
-        `/end-quiz?circle=${activeCircle}&email=${cookies.email}&quizId=${cookies.quiz.id}`
-      );
-      if (!res.data.isFailed) setEnd(true);
-      else history.push("/error");
-    })();
+    setQuery({
+      url: `/end-quiz?circle=${activeCircle}&email=${cookies.email}&quizId=${cookies.quiz.id}`,
+      method: "get",
+      options: "No auth",
+    });
   };
 
   return cookies.email ? (

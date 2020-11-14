@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-circle.svg";
@@ -10,42 +10,52 @@ const AddCircle: React.FC<any> = ({ history }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    data?: any;
+  }>({
+    url: "",
+    method: "get",
+  });
   const [cookies, , removeCookie] = useCookies(["token"]);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+  });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
-  }, [cookies.token, history]);
+
+    switch (query.url) {
+      case "/add-circle":
+        if (data.isFailed) {
+          setError(true);
+          setServerErrors(data.errors);
+        } else setSuccess(true);
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [cookies.token, history, data, query.url, removeCookie]);
 
   const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log(circle);
     if (!circle) setError(true);
-    else {
-      (async () => {
-        let res = await axios.post(
-          "/add-circle",
-          { name: circle },
-          {
-            headers: { Authorization: `Bearer ${cookies.token}` },
-          }
-        );
-        if (res.data.isFailed) {
-          setError(true);
-          setServerErrors(res.data.errors);
-        } else setSuccess(true);
-      })();
-    }
+    else
+      setQuery({ url: "/add-circle", method: "post", data: { name: circle } });
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (

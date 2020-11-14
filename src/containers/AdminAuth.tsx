@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import IllustratedImage from "../images/undraw_Choose_bwbs.svg";
-import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import { useCookies } from "react-cookie";
 
 const AdminAuth: React.FC<any> = ({ history }) => {
@@ -9,35 +9,53 @@ const AdminAuth: React.FC<any> = ({ history }) => {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    options?: string;
+    data?: any;
+  }>({
+    url: "",
+    method: "get",
+  });
   const [cookies, setCookies] = useCookies(["name"]);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+    options: query.options,
+  });
 
   useEffect(() => {
     if (cookies.token) history.push("/admin");
-  }, [cookies.token, history]);
-
-  const submitBasicData = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(true);
-    if (email && password) {
-      (async () => {
-        const inputs = {
-          email,
-          password,
-        };
-        let res = await axios.post("/auth", inputs);
-        let { data } = res;
+    
+    if (query.url === "/auth") {
+      if(data) {
         if (data.isFailed) setServerErrors(data.errors);
         else {
           setCookies("token", data.data.token);
           history.push("/admin");
         }
-      })();
+      }
+    }
+  }, [cookies.token, history, data, query.url, setCookies]);
+
+  const submitBasicData = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(true);
+    if (email && password) {
+      setQuery({
+        url: "/auth",
+        method: "post",
+        data: { email, password },
+        options: "No auth",
+      });
     }
   };
 
   return (
     <React.Fragment>
-      <Navbar name="CAT Race"/>
+      <Navbar name="CAT Race" />
       <main className="Home">
         <img src={IllustratedImage} alt="Illustrated svg" />
         <form onSubmit={(e) => submitBasicData(e)}>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-question.svg";
@@ -26,48 +26,83 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    data?: any;
+  }>({
+    url: "/add-question",
+    method: "get",
+  });
   const [cookies, , removeCookie] = useCookies(["token"]);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+  });
 
   const path = match.path === "/edit-question/:id" ? "edit" : "add";
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
-    (async () => {
-      let res = await axios.get("/add-question", {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        setCircles(res.data.data);
-      }
-      if (path === "edit") {
-        let res2 = await axios.get(
-          `/edit-question?questionId=${match.params.id}`,
-          {
-            headers: { Authorization: `Bearer ${cookies.token}` },
+    switch (query.url) {
+      case "/add-question":
+      case "/edit-question":
+        if (query.method === "get") {
+          if (data && !data.isFailed) {
+            setCircles(data.data);
           }
-        );
-        if (!res2.data.isFailed) {
-          setCircle(res2.data.data.circle);
-          setQuestion(res2.data.data.question.question);
-          setAnswerType(res2.data.data.question.answerType);
-          setIndex(res2.data.data.question.index);
-          setAnswers(res2.data.data.question.answers);
+          if (path === "edit")
+            setQuery({
+              url: `/edit-question?questionId=${match.params.id}`,
+              method: "get",
+            });
+        } else {
+          if (data.isFailed) setServerErrors(data.errors);
+          else setSuccess(true);
         }
-      }
-    })();
-  }, [cookies.token, history]);
+        break;
+      case `/edit-question?questionId=${match.params.id}`:
+        if (data.data.question && !data.isFailed) {
+          setCircle(data.data.circle);
+          setQuestion(data.data.question.question);
+          setAnswerType(data.data.question.answerType);
+          setIndex(data.data.question.index);
+          if (data.data.question.answers)
+            setAnswers(data.data.question.answers);
+          else setAnswers(["", "", "", ""]);
+        }
+        break;
+      case `/get-Index?quizId=${match.params.id}&circleId=${circle._id}`:
+        if (!data.isFailed) setIndex(data.data.index);
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [
+    cookies.token,
+    history,
+    data,
+    circle._id,
+    match.params.id,
+    path,
+    query.url,
+    removeCookie,
+    query.method,
+  ]);
 
   const getIndex = (circleId: string) => {
-    (async () => {
-      let res = await axios.get(
-        `/get-Index?quizId=${match.params.id}&circleId=${circleId}`,
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        }
-      );
-      if (!res.data.isFailed) setIndex(res.data.data.index);
-    })();
+    setQuery({
+      url: `/get-Index?quizId=${match.params.id}&circleId=${circleId}`,
+      method: "get",
+    });
   };
 
   const addQuestion = (e: React.FormEvent<HTMLFormElement>) => {
@@ -103,14 +138,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
           (answerType === "Multiple choice" || answerType === "One choice")
         )
           data.answers = quAnswers;
-
-        (async () => {
-          let res = await axios.post("/add-question", data, {
-            headers: { Authorization: `Bearer ${cookies.token}` },
-          });
-          if (res.data.isFailed) setServerErrors(res.data.errors);
-          else setSuccess(true);
-        })();
+        setQuery({ url: "/add-question", method: "post", data });
       } else {
         let data: {
           questionId: string;
@@ -127,28 +155,13 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
           (answerType === "Multiple choice" || answerType === "One choice")
         )
           data.answers = quAnswers;
-
-        (async () => {
-          let res = await axios.post("/edit-question", data, {
-            headers: { Authorization: `Bearer ${cookies.token}` },
-          });
-          if (res.data.isFailed) setServerErrors(res.data.errors);
-          else setSuccess(true);
-        })();
+        setQuery({ url: "/edit-question", method: "post", data });
       }
     }
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (
@@ -234,7 +247,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
                 setAnswerType(e.currentTarget.value as answerType);
                 setServerErrors({});
               }}
-              defaultValue={answerType}
+              value={answerType}
             >
               <option value="" disabled defaultChecked>
                 Choose answer type

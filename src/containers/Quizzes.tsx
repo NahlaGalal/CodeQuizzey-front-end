@@ -3,6 +3,7 @@ import { useCookies } from "react-cookie";
 import { Link } from "react-router-dom";
 import download from "downloadjs";
 import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 // Images
 import AdminNav from "../components/AdminNav";
 import menuIcon from "../images/three-dots.svg";
@@ -39,30 +40,50 @@ const Admin: React.FC<any> = ({ history }) => {
   const [cookies, , removeCookie] = useCookies(["token"]);
   const [quizzes, setQuizzes] = useState<IQuizzes>();
   const [currentQuizId, setCurrentQuizId] = useState<string>("");
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    options?: string;
+  }>({
+    url: "/get-quizzes",
+    method: "get",
+  });
   const prevMenu = useRef<HTMLUListElement>(null);
   const comingMenu = useRef<HTMLUListElement>(null);
-  const unmounted = useRef(false);
+  const { data } = useQuery({ url: query.url, method: query.method });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
-
-    if (!unmounted.current) {
-      (async () => {
-        let res = await axios.get("/get-quizzes", {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        setQuizzes(res.data.data);
-      })();
+    switch (query.url) {
+      case "/get-quizzes":
+        setQuizzes(data.data);
+        break;
+      case `/delete-quiz?quizId=${currentQuizId}`:
+        if (!data.isFailed) setQuery({ url: "/get-quizzes", method: "get" });
+        break;
+      case `/download?quizId=${currentQuizId}`:
+        download(data, "file.xlsx");
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
     }
-
-    return () => {
-      unmounted.current = true;
-    };
-  }, [cookies.token, history]);
+  }, [
+    cookies.token,
+    data,
+    history,
+    currentQuizId,
+    query.url,
+    removeCookie,
+  ]);
 
   const calculateDate = (d: string | undefined) => {
     if (!d) return;
-    console.log(d);
 
     const date = new Date(new Date(d).getTime() - new Date().getTime());
     const remaining: string[] = [];
@@ -144,6 +165,7 @@ const Admin: React.FC<any> = ({ history }) => {
   };
 
   const downloadResponses = () => {
+    setQuery({url: `/download?quizId=${currentQuizId}`, method: "get", options: "download"});
     (async () => {
       const res = await axios.get(`/download?quizId=${currentQuizId}`, {
         headers: {
@@ -160,33 +182,11 @@ const Admin: React.FC<any> = ({ history }) => {
   };
 
   const deleteQuiz = () => {
-    (async () => {
-      const res = await axios.delete(
-        `/delete-quiz?quizId=${currentQuizId}`,
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        }
-      );
-
-      if (!res.data.isFailed) {
-        const res2 = await axios.get("/get-quizzes", {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        setQuizzes(res2.data.data);
-      }
-    })();
+    setQuery({ url: `/delete-quiz?quizId=${currentQuizId}`, method: "delete" });
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-circle.svg";
@@ -12,28 +12,66 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    data?: any;
+  }>({
+    url: ``,
+    method: "get",
+  });
   const [cookies, , removeCookie] = useCookies(["token"]);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+  });
 
   const path = match.path === "/edit-quiz/:id" ? "edit" : "add";
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
-    if (path === "edit") {
-      (async () => {
-        let res = await axios.get(`/edit-quiz?quizId=${match.params.id}`, {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        if (!res.data.isFailed) {
-          setQuiz(res.data.data.name);
-          setStartDate(
-            res.data.data.startDate.split(":").splice(0, 2).join(":")
-          );
-          setEndDate(res.data.data.endDate.split(":").splice(0, 2).join(":"));
-        }
-      })();
+    if (path === "edit")
+      setQuery({ url: `/edit-quiz?quizId=${match.params.id}`, method: "get" });
+    else {
+      setQuiz("");
+      setStartDate("");
+      setEndDate("");
     }
-  }, [cookies.token, history, path, match.params.id]);
+
+    switch (query.url) {
+      case `/edit-quiz?quizId=${match.params.id}`:
+        if (data && !data.isFailed) {
+          setQuiz(data.data.name);
+          setStartDate(data.data.startDate.split(":").splice(0, 2).join(":"));
+          setEndDate(data.data.endDate.split(":").splice(0, 2).join(":"));
+        }
+        break;
+      case "/add-quiz":
+        if (data.isFailed) {
+          setServerErrors(data.errors);
+          setError(true);
+        } else setSuccess(true);
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [
+    cookies.token,
+    history,
+    path,
+    match.params.id,
+    data,
+    query.url,
+    removeCookie,
+  ]);
 
   const addQuiz = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -44,27 +82,11 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
         ? { name: quiz, startDate, endDate }
         : { name: quiz, startDate, endDate, quizId: match.params.id };
 
-    (async () => {
-      let res = await axios.post("/add-quiz", data, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (res.data.isFailed) {
-        setServerErrors(res.data.errors);
-        setError(true);
-      } else setSuccess(true);
-    })();
+    setQuery({ url: "/add-quiz", method: "post", data });
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (

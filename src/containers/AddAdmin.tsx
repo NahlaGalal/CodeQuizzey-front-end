@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-circle.svg";
@@ -12,40 +12,55 @@ const AddAdmin: React.FC<any> = ({ history }) => {
   const [error, setError] = useState<boolean>(false);
   const [serverErrors, setServerErrors] = useState<any>({});
   const [success, setSuccess] = useState(false);
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+    data?: any;
+  }>({
+    url: "",
+    method: "get",
+  });
   const [cookies, , removeCookie] = useCookies(["token"]);
+  const { data } = useQuery({
+    url: query.url,
+    method: query.method,
+    data: query.data,
+  });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
-  }, [cookies.token, history]);
+
+    switch (query.url) {
+      case "/add-admin":
+        if (data.isFailed) {
+          setError(true);
+          setServerErrors(data.errors);
+        } else setSuccess(true);
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [cookies.token, history, data, query.url, removeCookie]);
 
   const addAdmin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name || !email || !password) setError(true);
-    (async () => {
-      let res = await axios.post(
-        "/add-admin",
-        { name, email, password },
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        }
-      );
-      if (res.data.isFailed) {
-        setServerErrors(res.data.errors);
-        setError(true);
-      } else setSuccess(true);
-    })();
+    else
+      setQuery({
+        url: "/add-admin",
+        method: "post",
+        data: { name, email, password },
+      });
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (

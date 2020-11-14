@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
-import axios from "../axiosInstance";
 import AdminNav from "../components/AdminNav";
 import QuestionCard from "../components/QuestionCard";
+import useQuery from "../utils/useQuery";
 
 type answerType =
   | "Multiple choice"
@@ -56,25 +56,40 @@ const Standings: React.FC<any> = ({ match, history }) => {
     name: "",
     state: "",
   });
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+  }>({
+    url: `/responses?quizId=${match.params.id}`,
+    method: "get",
+  });
+  const { data } = useQuery({ url: query.url, method: query.method });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
-    (async () => {
-      let res = await axios.get(`/responses?quizId=${match.params.id}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        setResponses(res.data.data.responses);
-        const circles = new Set<string>();
-        res.data.data.responses.map((res: IResponses) =>
-          res.solvedQuestions.map((qu) => circles.add(qu.circle))
-        );
-        setCircles(Array.from(circles));
-        setQuiz(res.data.data.quiz);
-      }
-    })();
-  }, [cookies.token, match.params.id, history]);
+    switch (query.url) {
+      case `/responses?quizId=${match.params.id}`:
+        if(data && !data.isFailed) {
+          setResponses(data.data.responses);
+          const circles = new Set<string>();
+          data.data.responses.map((res: IResponses) =>
+            res.solvedQuestions.map((qu) => circles.add(qu.circle))
+          );
+          setCircles(Array.from(circles));
+          setQuiz(data.data.quiz);
+        }
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [cookies.token, match.params.id, history, data, removeCookie, query.url]);
 
   const showQuestion = (details: IQuestionDetails, userAnswer: string) => {
     setQuestionCard({ ...details, userAnswer });
@@ -82,15 +97,7 @@ const Standings: React.FC<any> = ({ match, history }) => {
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (

@@ -3,6 +3,7 @@ import { useCookies } from "react-cookie";
 import { Link } from "react-router-dom";
 import download from "downloadjs";
 import axios from "../axiosInstance";
+import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 
 type answerType =
@@ -30,21 +31,53 @@ const Quiz: React.FC<any> = ({ history, match }) => {
     state: "",
   });
   const [questions, setQuestions] = useState<IQuestionDetails[]>([]);
+  const [questionId, setQuestionId] = useState<string>("");
+  const [query, setQuery] = useState<{
+    url: string;
+    method: "get" | "post" | "delete";
+  }>({
+    url: `/quiz?quizId=${match.params.id}`,
+    method: "get",
+  });
+  const { data } = useQuery({ url: query.url, method: query.method });
 
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
-    (async () => {
-      let res = await axios.get(`/quiz?quizId=${match.params.id}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        setCircles(res.data.data.circles);
-        setQuestions(res.data.data.questions);
-        setQuiz(res.data.data.quiz);
-      }
-    })();
-  }, [cookies.token, history, match.params.id]);
+    switch (query.url) {
+      case `/quiz?quizId=${match.params.id}`:
+        if (data && !data.isFailed) {
+          setCircles(data.data.circles);
+          setQuestions(data.data.questions);
+          setQuiz(data.data.quiz);
+        }
+        break;
+      case `/delete-quiz?quizId=${match.params.id}`:
+        if (!data.isFailed) history.push("/admin");
+        break;
+      case `/delete-question?questionId=${questionId}`:
+        if (!data.isFailed)
+          setQuery({ url: `/quiz?quizId=${match.params.id}`, method: "get" });
+        break;
+      case `/logout?token=${cookies.token}`:
+        if (!data.isFailed) {
+          removeCookie("token");
+          history.push("/auth");
+        }
+        break;
+      default:
+        break;
+    }
+  }, [
+    cookies.token,
+    history,
+    match.params.id,
+    data.data,
+    data,
+    query.url,
+    questionId,
+    removeCookie,
+  ]);
 
   const downloadResponses = () => {
     (async () => {
@@ -63,46 +96,22 @@ const Quiz: React.FC<any> = ({ history, match }) => {
   };
 
   const deleteQuiz = () => {
-    (async () => {
-      const res = await axios.delete(`/delete-quiz?quizId=${match.params.id}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-
-      if (!res.data.isFailed) history.push("/admin");
-    })();
+    setQuery({
+      url: `/delete-quiz?quizId=${match.params.id}`,
+      method: "delete",
+    });
   };
 
   const deleteQuestion = (questionId: string) => {
-    (async () => {
-      const res = await axios.delete(
-        `/delete-question?questionId=${questionId}`,
-        {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        }
-      );
-
-      if (!res.data.isFailed) {
-        const res2 = await axios.get(`/quiz?quizId=${match.params.id}`, {
-          headers: { Authorization: `Bearer ${cookies.token}` },
-        });
-        if (!res2.data.isFailed) {
-          setCircles(res2.data.data.circles);
-          setQuestions(res2.data.data.questions);
-        }
-      }
-    })();
+    setQuestionId(questionId);
+    setQuery({
+      url: `/delete-question?questionId=${questionId}`,
+      method: "delete",
+    });
   };
 
   const logout = () => {
-    (async () => {
-      let res = await axios.get(`/logout?token=${cookies.token}`, {
-        headers: { Authorization: `Bearer ${cookies.token}` },
-      });
-      if (!res.data.isFailed) {
-        removeCookie("token");
-        history.push("/auth");
-      }
-    })();
+    setQuery({ url: `/logout?token=${cookies.token}`, method: "get" });
   };
 
   return (
