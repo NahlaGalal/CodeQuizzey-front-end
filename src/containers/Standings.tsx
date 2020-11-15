@@ -70,7 +70,7 @@ const Standings: React.FC<any> = ({ match, history }) => {
 
     switch (query.url) {
       case `/responses?quizId=${match.params.id}`:
-        if(data && !data.isFailed) {
+        if(data && data.data.responses && !data.isFailed) {
           setResponses(data.data.responses);
           const circles = new Set<string>();
           data.data.responses.map((res: IResponses) =>

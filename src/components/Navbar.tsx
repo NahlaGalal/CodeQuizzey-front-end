@@ -12,7 +12,6 @@ const Navbar: React.FC<{ logoOnly?: boolean; name: string }> = ({
           <p>
             Hello to {name} hope you all the luck and we all always with you
           </p>
-          <p className="Navbar__logo">Once a CATian, always a CATian</p>
         </React.Fragment>
       )}
     </nav>

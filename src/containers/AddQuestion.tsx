@@ -64,7 +64,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
         }
         break;
       case `/edit-question?questionId=${match.params.id}`:
-        if (data.data.question && !data.isFailed) {
+        if (data.data && data.data.question && !data.isFailed) {
           setCircle(data.data.circle);
           setQuestion(data.data.question.question);
           setAnswerType(data.data.question.answerType);
@@ -72,6 +72,8 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
           if (data.data.question.answers)
             setAnswers(data.data.question.answers);
           else setAnswers(["", "", "", ""]);
+        } else if (data.data && !data.isFailed) {
+          setCircles(data.data);
         }
         break;
       case `/get-Index?quizId=${match.params.id}&circleId=${circle._id}`:
@@ -168,7 +170,7 @@ const AddQuestion: React.FC<any> = ({ history, match }) => {
     <React.Fragment>
       <AdminNav logout={logout} />
       <main className="Add-circle">
-        <h2>Add Question</h2>
+        <h2>{path === "edit" ? "Edit" : "Add"} Question</h2>
         <img src={IllustratedImage} alt="Illustrated svg of add question" />
         <form onSubmit={(e) => addQuestion(e)}>
           {/* Select circle */}

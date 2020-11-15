@@ -55,7 +55,7 @@ const AdminAuth: React.FC<any> = ({ history }) => {
 
   return (
     <React.Fragment>
-      <Navbar name="CAT Race" />
+      <Navbar name="CodeQuizzey" />
       <main className="Home">
         <img src={IllustratedImage} alt="Illustrated svg" />
         <form onSubmit={(e) => submitBasicData(e)}>

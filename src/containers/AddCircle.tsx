@@ -33,7 +33,7 @@ const AddCircle: React.FC<any> = ({ history }) => {
         if (data.isFailed) {
           setError(true);
           setServerErrors(data.errors);
-        } else setSuccess(true);
+        } else if (!data.isFailed && data.data && data.data.success) setSuccess(true);
         break;
       case `/logout?token=${cookies.token}`:
         if (!data.isFailed) {
@@ -48,7 +48,6 @@ const AddCircle: React.FC<any> = ({ history }) => {
 
   const submitCircle = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(circle);
     if (!circle) setError(true);
     else
       setQuery({ url: "/add-circle", method: "post", data: { name: circle } });

@@ -4,6 +4,7 @@ import useQuery from "../utils/useQuery";
 import AdminNav from "../components/AdminNav";
 import Modal from "../components/Modal";
 import IllustratedImage from "../images/add-circle.svg";
+import { padStart } from "lodash";
 
 const AddQuiz: React.FC<any> = ({ history, match }) => {
   const [quiz, setQuiz] = useState<string>("");
@@ -29,6 +30,19 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
 
   const path = match.path === "/edit-quiz/:id" ? "edit" : "add";
 
+  const formatDate = (date: string) => {
+    const d = new Date(date);
+    return `${d.getFullYear()}-${padStart(
+      `${d.getMonth() + 1}`,
+      2,
+      "0"
+    )}-${padStart(`${d.getDate()}`, 2, "0")}T${padStart(
+      `${d.getHours()}`,
+      2,
+      "0"
+    )}:${padStart(`${d.getMinutes()}`, 2, "0")}`;
+  };
+
   useEffect(() => {
     if (!cookies.token) history.push("/auth");
 
@@ -42,10 +56,10 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
 
     switch (query.url) {
       case `/edit-quiz?quizId=${match.params.id}`:
-        if (data && !data.isFailed) {
+        if (data && !data.isFailed && data.data.name) {
           setQuiz(data.data.name);
-          setStartDate(data.data.startDate.split(":").splice(0, 2).join(":"));
-          setEndDate(data.data.endDate.split(":").splice(0, 2).join(":"));
+          setStartDate(formatDate(data.data.startDate));
+          setEndDate(formatDate(data.data.endDate));
         }
         break;
       case "/add-quiz":
@@ -93,7 +107,7 @@ const AddQuiz: React.FC<any> = ({ history, match }) => {
     <React.Fragment>
       <AdminNav logout={logout} />
       <main className="Add-circle">
-        <h2>Add Quiz</h2>
+        <h2>{path === "edit" ? "Edit" : "Add"} Quiz</h2>
         <img src={IllustratedImage} alt="Illustrated svg of add quiz" />
         <form onSubmit={(e) => addQuiz(e)}>
           <div className="text-input">

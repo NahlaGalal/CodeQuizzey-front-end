@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useCookies } from "react-cookie";
 import useQuery from "../utils/useQuery";
-import axios from "../axiosInstance";
 import Navbar from "../components/Navbar";
 import QuestionCard from "../components/QuestionCard";
 
@@ -36,16 +35,16 @@ const Question: React.FC<any> = ({ location, history }) => {
   const [lastQuestion, setLastQuestion] = useState<boolean>(false);
   // To forbid showing questions when user ends the quiz or solve all questions
   const [end, setEnd] = useState<boolean>(false);
-  // To reload page when submit last question
-  const [reload, setReload] = useState<boolean>(false);
 
-  const getLinkAPI = () => {
-    let circleId: string = new URLSearchParams(location.search).get(
-      "circleId"
-    ) as string;
-    let quNo: string = new URLSearchParams(location.search).get(
-      "quNo"
-    ) as string;
+  const getLinkAPI = (cId?: string, index?: string) => {
+    if (!cookies.email) history.push("/");
+
+    let circleId: string =
+      cId || (new URLSearchParams(location.search).get("circleId") as string);
+    let quNo: string =
+      index !== undefined
+        ? index
+        : (new URLSearchParams(location.search).get("quNo") as string);
     let linkAPI = circleId
       ? quNo
         ? `/question?circle=${circleId}&quNo=${quNo}&email=${cookies.email}&quizId=${cookies.quiz.id}`
@@ -81,46 +80,57 @@ const Question: React.FC<any> = ({ location, history }) => {
 
     switch (query.url) {
       case linkApi:
-        setActiveCircle(
-          circleId ||
-            cookies.circles.find(
-              (c: { name: string; id: string }) => c.name === "Non-technical"
-            ).id
-        );
-        if(data) {
-          if (!data.isFailed) {
-            setQu(data.data.question);
-            if (data.data.lastQuestion) setLastQuestion(true);
-            else setLastQuestion(false);
-          } else {
-            const err = data.errors.data;
-            if (err.startsWith("Question") && err.endsWith("solved")) {
-              setQu({
-                question: "",
-                _id: "",
-                answerType: "Short text",
-                circleId,
-                answers: [],
-                index: +err.split(" ")[1],
-              });
-              setLastQuestion(data.errors.lastQuestion);
-            } else if (err === "Wrong Circle id" || err === "Missing data") {
-              history.push("/error");
-            } else if (err === "All questions solved") {
-              setEnd(true);
+        if (query.method === "get") {
+          setActiveCircle(
+            circleId ||
+              cookies.circles.find(
+                (c: { name: string; id: string }) => c.name === "Non-technical"
+              ).id
+          );
+          if (data) {
+            if (!data.isFailed && data.data.question) {
+              setQu(data.data.question);
+              if (data.data.lastQuestion) setLastQuestion(true);
+              else setLastQuestion(false);
+            } else if (data.isFailed && data.errors.data) {
+              const err = data.errors.data;
+              if (err.startsWith("Question") && err.endsWith("solved")) {
+                setQu({
+                  question: "",
+                  _id: "",
+                  answerType: "Short text",
+                  circleId,
+                  answers: [],
+                  index: +err.split(" ")[1],
+                });
+                setLastQuestion(data.errors.lastQuestion);
+              } else if (err === "Wrong Circle id" || err === "Missing data") {
+                history.push("/error");
+              } else if (err === "All questions solved") {
+                setEnd(true);
+              }
             }
           }
         }
         break;
       case "/question":
-        if (data.isFailed) history.push("/error");
-        else {
-          if (lastQuestion) setReload(!reload);
-          else
-            history.push({
-              pathname: "/question",
-              search: `?circleId=${qu.circleId}&quNo=${qu.index + 1}`,
-            });
+        if (query.method === "post") {
+          if (data.isFailed) history.push("/error");
+          else {
+            if (lastQuestion)
+              setQuery({ url: getLinkAPI(qu.circleId)[0], method: "get" });
+            else {
+              history.push({
+                pathname: "/question",
+                search: `?circleId=${qu.circleId}&quNo=${qu.index + 1}`,
+              });
+              setQuery({
+                url: getLinkAPI(qu.circleId, `${qu.index + 1}`)[0],
+                method: "get",
+                options: "No auth",
+              });
+            }
+          }
         }
         break;
       case `/end-quiz?circle=${activeCircle}&email=${cookies.email}&quizId=${cookies.quiz.id}`:
@@ -130,12 +140,17 @@ const Question: React.FC<any> = ({ location, history }) => {
       default:
         break;
     }
-  }, [location.search, cookies.email, cookies.circles, history, reload, data]);
+  }, [location.search, cookies.email, cookies.circles, history, data]);
 
   const nextQuestion = () => {
     history.push({
       pathname: "/question",
       search: `?circleId=${qu.circleId}&quNo=${qu.index + 1}`,
+    });
+    setQuery({
+      url: getLinkAPI(qu.circleId, `${qu.index + 1}`)[0],
+      method: "get",
+      options: "No auth",
     });
   };
 
@@ -143,6 +158,11 @@ const Question: React.FC<any> = ({ location, history }) => {
     history.push({
       pathname: "/question",
       search: `?circleId=${qu.circleId}&quNo=${qu.index - 1}`,
+    });
+    setQuery({
+      url: getLinkAPI(qu.circleId, `${qu.index - 1}`)[0],
+      method: "get",
+      options: "No auth",
     });
   };
 
@@ -159,6 +179,11 @@ const Question: React.FC<any> = ({ location, history }) => {
     history.push({
       pathname: "/question",
       search: `?circleId=${e.currentTarget.dataset.id}`,
+    });
+    setQuery({
+      url: getLinkAPI(e.currentTarget.dataset.id, "")[0],
+      method: "get",
+      options: "No auth",
     });
   };
 

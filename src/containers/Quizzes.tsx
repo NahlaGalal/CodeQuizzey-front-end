@@ -56,13 +56,17 @@ const Admin: React.FC<any> = ({ history }) => {
     if (!cookies.token) history.push("/auth");
     switch (query.url) {
       case "/get-quizzes":
-        setQuizzes(data.data);
+        if (
+          data.data &&
+          (data.data.currentQuiz || data.data.currentQuiz === null)
+        )
+          setQuizzes(data.data);
         break;
       case `/delete-quiz?quizId=${currentQuizId}`:
         if (!data.isFailed) setQuery({ url: "/get-quizzes", method: "get" });
         break;
       case `/download?quizId=${currentQuizId}`:
-        download(data, "file.xlsx");
+        if(typeof data === "string") download(data, "file.xlsx");
         break;
       case `/logout?token=${cookies.token}`:
         if (!data.isFailed) {
@@ -73,14 +77,7 @@ const Admin: React.FC<any> = ({ history }) => {
       default:
         break;
     }
-  }, [
-    cookies.token,
-    data,
-    history,
-    currentQuizId,
-    query.url,
-    removeCookie,
-  ]);
+  }, [cookies.token, data, history, currentQuizId, query.url, removeCookie]);
 
   const calculateDate = (d: string | undefined) => {
     if (!d) return;
@@ -165,20 +162,11 @@ const Admin: React.FC<any> = ({ history }) => {
   };
 
   const downloadResponses = () => {
-    setQuery({url: `/download?quizId=${currentQuizId}`, method: "get", options: "download"});
-    (async () => {
-      const res = await axios.get(`/download?quizId=${currentQuizId}`, {
-        headers: {
-          Authorization: `Bearer ${cookies.token}`,
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition": "attachment",
-          filename: "file.xlsx",
-        },
-        responseType: "blob",
-      });
-
-      download(res.data, "file.xlsx");
-    })();
+    setQuery({
+      url: `/download?quizId=${currentQuizId}`,
+      method: "get",
+      options: "download",
+    });
   };
 
   const deleteQuiz = () => {

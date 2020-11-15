@@ -46,7 +46,7 @@ const Quiz: React.FC<any> = ({ history, match }) => {
 
     switch (query.url) {
       case `/quiz?quizId=${match.params.id}`:
-        if (data && !data.isFailed) {
+        if (data && !data.isFailed && data.data.quiz) {
           setCircles(data.data.circles);
           setQuestions(data.data.questions);
           setQuiz(data.data.quiz);
@@ -56,7 +56,7 @@ const Quiz: React.FC<any> = ({ history, match }) => {
         if (!data.isFailed) history.push("/admin");
         break;
       case `/delete-question?questionId=${questionId}`:
-        if (!data.isFailed)
+        if (!data.isFailed && data.data.success)
           setQuery({ url: `/quiz?quizId=${match.params.id}`, method: "get" });
         break;
       case `/logout?token=${cookies.token}`:
@@ -72,7 +72,6 @@ const Quiz: React.FC<any> = ({ history, match }) => {
     cookies.token,
     history,
     match.params.id,
-    data.data,
     data,
     query.url,
     questionId,
@@ -119,8 +118,8 @@ const Quiz: React.FC<any> = ({ history, match }) => {
       <AdminNav logout={logout} />
       <main className="Quiz">
         <header>
-          <h2>{quiz.name}</h2>
-          <p>{quiz.state}</p>
+          <h2>{quiz?.name}</h2>
+          <p>{quiz?.state}</p>
         </header>
 
         <section>
@@ -137,14 +136,16 @@ const Quiz: React.FC<any> = ({ history, match }) => {
                     .map((question) => (
                       <li key={question._id}>
                         {question.index}- {question.question}
-                        <span>
-                          <Link to={`/edit-question/${question._id}`}>
-                            Edit question
-                          </Link>
-                          <button onClick={() => deleteQuestion(question._id)}>
-                            Delete question
-                          </button>
-                        </span>
+                        {quiz.state === "Upcoming quiz" && (
+                          <span>
+                            <Link to={`/edit-question/${question._id}`}>
+                              Edit question
+                            </Link>
+                            <button onClick={() => deleteQuestion(question._id)}>
+                              Delete question
+                            </button>
+                          </span>
+                        )}
                       </li>
                     ))}
                 </ul>
