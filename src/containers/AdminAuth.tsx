@@ -18,7 +18,7 @@ const AdminAuth: React.FC<any> = ({ history }) => {
     url: "",
     method: "get",
   });
-  const [cookies, setCookies] = useCookies(["name"]);
+  const [cookies, setCookies] = useCookies();
   const { data } = useQuery({
     url: query.url,
     method: query.method,
