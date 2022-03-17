@@ -1,12 +1,12 @@
 {
   "files": {
-    "main.css": "/static/css/main.511296e6.chunk.css",
-    "main.js": "/static/js/main.91bd78f7.chunk.js",
+    "main.css": "/static/css/main.69533f48.chunk.css",
+    "main.js": "/static/js/main.ff55a30b.chunk.js",
     "runtime-main.js": "/static/js/runtime-main.83c3e0c4.js",
     "static/css/2.fa822981.chunk.css": "/static/css/2.fa822981.chunk.css",
     "static/js/2.daf943c7.chunk.js": "/static/js/2.daf943c7.chunk.js",
     "index.html": "/index.html",
-    "precache-manifest.a8a61ce14ef9a00221731d58e7f33595.js": "/precache-manifest.a8a61ce14ef9a00221731d58e7f33595.js",
+    "precache-manifest.bb459ce4b2923c9755565d0b82ee135a.js": "/precache-manifest.bb459ce4b2923c9755565d0b82ee135a.js",
     "service-worker.js": "/service-worker.js",
     "static/js/2.daf943c7.chunk.js.LICENSE.txt": "/static/js/2.daf943c7.chunk.js.LICENSE.txt",
     "static/media/add-circle.svg": "/static/media/add-circle.dffd1539.svg",
@@ -28,7 +28,7 @@
     "static/js/runtime-main.83c3e0c4.js",
     "static/css/2.fa822981.chunk.css",
     "static/js/2.daf943c7.chunk.js",
-    "static/css/main.511296e6.chunk.css",
-    "static/js/main.91bd78f7.chunk.js"
+    "static/css/main.69533f48.chunk.css",
+    "static/js/main.ff55a30b.chunk.js"
   ]
 }
